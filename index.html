@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KhaToon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div class="header">
+        <div class="header-logo-group" style="display: flex; align-items: center; gap: 10px;">
+            <img src="images/icons/icon_logo.png" class="app-logo" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
+            <div class="logo-text"><span class="logo-k">K</span>haTOON</div>
+        </div>
+        <div class="header-icons">
+            <div class="icon-box" onclick="toggleTheme()">
+                <img id="theme-icon" src="images/icons/icon_sun.png" class="icon-btn" alt="Theme">
+                <span id="theme-text" class="icon-label" style="font-size: 10px;">Light</span>
+            </div>
+            <div class="icon-box" onclick="openBookmarks()">
+                <img src="images/icons/icon_bookmark.png" class="icon-btn" alt="Bookmarks">
+                <span class="icon-label" style="font-size: 10px;">Saved</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search stories..." onkeyup="handleSearch(event)">
+        <button onclick="performSearch()">🔍</button>
+    </div>
+
+    <div class="section-title">Story World </div>
+    <a href="world.html?type=story" class="banner-wrapper">
+        <img src="images/covers/banner_story.jpg" class="banner">
+        <div class="banner-label">Story World <i class="css-arrow"></i></div>
+    </a>
+    
+    <div id="list-story" class="scroll-container"></div>
+
+
+    <div class="section-title">Novel World </div>
+    <a href="world.html?type=novel" class="banner-wrapper">
+        <img src="images/covers/banner_novel.jpg" class="banner">
+        <div class="banner-label">Novel World <i class="css-arrow"></i></div>
+    </a>
+
+    <div id="list-novel" class="scroll-container"></div>
+
+
+    <div class="section-title">Comic World </div>
+    <a href="world.html?type=comic" class="banner-wrapper">
+        <img src="images/covers/banner_comic.jpg" class="banner">
+        <div class="banner-label">Comic World <i class="css-arrow"></i></div>
+    </a>
+    
+    <div id="list-comic" class="scroll-container"></div>
+
+    <div class="footer">
+        © 2025 KhaToon. All Rights Reserved.
+    </div>
+
+    <div id="bookmark-overlay" class="bookmark-overlay" onclick="toggleBookmarks()"></div>
+    <div id="bookmark-drawer" class="bookmark-drawer">
+        <div class="drawer-header">
+            <h3>My Bookmarks </h3>
+            <span onclick="toggleBookmarks()" style="cursor:pointer; font-size:20px;">✖</span>
+        </div>
+        <div id="bookmark-list">
+            <div style="text-align:center; padding:20px; color:#666;">No bookmarks yet!</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="stories.js"></script>
+<script src="app.js"></script>
+
+<script>
+    // --- AUTOMATIC HOME PAGE LOADER (Fixed Badges) ---
+    
+    const storyList = document.getElementById("list-story");
+    const novelList = document.getElementById("list-novel");
+    const comicList = document.getElementById("list-comic");
+
+    for (let key in db) {
+        let item = db[key];
+        
+        // 1. CHECK FOR BADGE
+        let badgeHTML = "";
+        if (item.badge) {
+            // Check if it is "NEW" or "UP" to give it the right color
+            let badgeClass = (item.badge === "NEW") ? "badge-new" : "badge-up";
+            badgeHTML = `<span class="badge ${badgeClass}">${item.badge}</span>`;
+        }
+
+        // 2. CREATE CARD (Now includes ${badgeHTML})
+        let cardHTML = `
+            <div class="story-card" onclick="location.href='view.html?id=${item.id}&from=home'">
+                ${badgeHTML} 
+                <img src="${item.cover}" class="story-cover">
+                <div class="story-title">${item.title}</div>
+                <div class="story-stats">${item.stats}</div>
+            </div>
+        `;
+
+        // 3. ADD TO LIST
+        if (item.type === 'story') {
+            storyList.innerHTML += cardHTML;
+        } else if (item.type === 'novel') {
+            novelList.innerHTML += cardHTML;
+        } else if (item.type === 'comic') {
+            comicList.innerHTML += cardHTML;
+        }
+    }
+
+    enableDragScroll();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading...</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div class="header">
+        <div onclick="history.back()" style="cursor: pointer;">
+            <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
+        </div>
+        
+        <div id="display-title" style="font-weight: bold; font-size: 18px;">Loading...</div>
+        
+        <div></div> </div>
+
+    <div id="content-area" style="padding: 20px; line-height: 1.6;">
+        </div>
+
+</div>
+
+<script src="stories.js"></script>
+
+<script>
+    // 1. Get the ID and Language from the URL (e.g., ?id=story_01&lang=en)
+    const params = new URLSearchParams(window.location.search);
+    const storyId = params.get('id'); // "story_01"
+    const lang = params.get('lang');  // "en" or "kh"
+
+    // 2. Find the data in your stories.js file
+    const data = storyData[storyId];
+
+    if (data) {
+        // 3. Update the Page
+        document.title = data.title;
+        document.getElementById("display-title").innerText = data.title;
+
+        // Display Text
+        const textContent = (lang === 'kh') ? data.content_kh : data.content_en;
+        
+        // Display Images (if any)
+        let imagesHtml = "";
+        if (data.images && data.images.length > 0) {
+            data.images.forEach(imgSrc => {
+                imagesHtml += `<img src="${imgSrc}" style="width:100%; border-radius:8px; margin-bottom:10px;">`;
+            });
+        }
+
+        // Combine them
+        document.getElementById("content-area").innerHTML = `
+            ${imagesHtml}
+            <p>${textContent}</p>
+        `;
+
+    } else {
+        document.getElementById("content-area").innerHTML = "<h3 style='color:red'>Story not found! Check your ID.</h3>";
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+
+    <div class="header" style="justify-content: space-between;">
+        <div onclick="location.href='index.html'" style="cursor: pointer; width: 40px;">
+            <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
+        </div>
+        
+        <div class="logo-text" id="page-title" style="flex:1; text-align:center;">
+            World
+        </div>
+        
+        <div style="width: 40px;"></div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search..." onkeyup="handleLocalSearch(event)">
+        <button onclick="localSearch()">🔍</button>
+    </div>
+
+    <div class="story-grid" id="grid-container"></div>
+
+</div>
+
+<script src="stories.js"></script>
+<script src="app.js"></script>
+
+<script>
+    // 1. GET URL PARAMETERS
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type'); 
+    const query = params.get('q'); 
+
+    // 2. SETUP TITLES
+    const titles = { 
+        comic: "Comic World 🎨", 
+        novel: "Novel World 📜", 
+        story: "Story World 📖", 
+        search: "Global Search 🔍" 
+    };
+    document.getElementById("page-title").innerText = titles[type] || "World";
+
+    // 3. FILL SEARCH BAR (If searching)
+    if (query) {
+        document.getElementById("search-input").value = query;
+    }
+
+    // ❌ BANNER LOGIC REMOVED (No longer needed)
+
+    // 4. FILL THE GRID (Smart Context Filter)
+    const container = document.getElementById("grid-container");
+    container.innerHTML = ""; 
+
+    let count = 0;
+
+    for (let key in db) {
+        let item = db[key];
+        let match = true;
+
+        // FILTER 1: CHECK TYPE
+        if (type !== 'search') {
+            if (item.type !== type) {
+                match = false;
+            }
+        }
+
+        // FILTER 2: CHECK SEARCH TEXT
+        if (query) {
+            const searchText = query.toLowerCase();
+            const titleMatch = item.title.toLowerCase().includes(searchText);
+            const authorMatch = item.author.toLowerCase().includes(searchText);
+            
+            if (!titleMatch && !authorMatch) {
+                match = false;
+            }
+        }
+
+        // RENDER IF PASSED CHECKS
+        if (match) {
+            count++;
+
+            // ✅ NEW: CREATE BADGE HTML
+            let badgeHTML = "";
+            if (item.badge) {
+                let badgeClass = (item.badge === "NEW") ? "badge-new" : "badge-up";
+                badgeHTML = `<span class="badge ${badgeClass}">${item.badge}</span>`;
+            }
+
+            // ✅ NEW: ADD BADGE TO CARD
+            container.innerHTML += `
+                <div class="story-card" onclick="location.href='view.html?id=${item.id}'">
+                    ${badgeHTML}
+                    <img src="${item.cover}" class="story-cover">
+                    <div class="story-title">${item.title}</div>
+                    <div class="story-stats">${item.stats}</div>
+                </div>
+            `;
+        }
+    }
+
+    // 5. NO RESULTS MESSAGE
+    if (count === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:gray;">
+            <h3>No results found</h3>
+            <p>We couldn't find anything for "${query || type}"</p>
+        </div>`;
+    }
+
+    // --- SEARCH FUNCTIONS ---
+    function handleLocalSearch(event) {
+        if (event.key === 'Enter') {
+            localSearch();
+        }
+    }
+
+    function localSearch() {
+        const inputVal = document.getElementById("search-input").value;
+        
+        if (inputVal.trim() !== "") {
+            // Keep the current type (e.g., stay in Story World) but add the search query
+            location.href = `world.html?type=${type}&q=${inputVal}`;
+        } else {
+            // Clear search, stay in World
+            location.href = `world.html?type=${type}`;
+        }
+    }
+</script>
+</body>
+</html>

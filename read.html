@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reading</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Small override for the dropdown to look nice in the center */
+        #ep-select {
+            background-color: #222;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-top: 4px;
+            max-width: 150px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <div class="header">
+        <div onclick="goBack()" style="cursor: pointer; z-index: 20;">
+            <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
+        </div>
+
+        <div class="reader-header-content">
+            <div id="r-title" style="font-size:14px; font-weight:bold;">Loading...</div>
+            
+            <select id="ep-select" onchange="jumpToEp(this.value)" style="display:none;">
+                </select>
+        </div>
+
+        </div>
+
+    <div id="content-area" style="padding-bottom: 20px;"></div>
+
+    <div id="nav-controls" class="nav-bar" style="display:none;">
+        <button id="btn-prev" class="nav-btn" onclick="changeEp(-1)">Previous</button>
+        <button id="btn-next" class="nav-btn" onclick="handleNext()">Next Episode</button>
+    </div>
+
+    <div id="end-popup" class="popup-overlay">
+        <div class="popup-box">
+            <h3>🎉 All Caught Up!</h3>
+            <p>You have reached the latest episode.</p>
+            <p style="font-size:12px; color:gray;">Check back later for updates.</p>
+            <button class="popup-btn" onclick="closePopup()">Okay</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="stories.js"></script>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const lang = params.get('lang'); 
+    let ep = parseInt(params.get('ep')); 
+    
+    // 1. GET THE FLAG
+    const fromWhere = params.get('from');
+    const fromString = fromWhere ? `&from=${fromWhere}` : "";
+
+    const data = db[id];
+    const container = document.getElementById("content-area");
+    const selectBox = document.getElementById("ep-select");
+
+    // --- ✅ FIX: RETURN BUTTON ---
+    // Now we send the flag back to view.html
+    function goBack() {
+        location.href = `view.html?id=${id}${fromString}`;
+    }
+
+    if (data) {
+        // --- STORY LOGIC ---
+        if (data.type === "story") {
+            document.getElementById("r-title").innerText = data.title;
+            let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
+            if (episodes && episodes[ep]) {
+                setupStoryDropdown(episodes);
+                renderImages(episodes[ep]);
+                setupStoryNavigation(episodes);
+            }
+        } 
+        // --- COMIC / NOVEL LOGIC ---
+        else if (data.episodes && data.episodes[ep]) {
+            document.getElementById("r-title").innerText = data.title;
+            setupDropdown();
+            renderImages(data.episodes[ep]);
+            setupNavigation();
+        }
+    }
+
+    function renderImages(content) {
+        if (Array.isArray(content)) {
+            content.forEach(imgSrc => {
+                container.innerHTML += `<img src="${imgSrc}" style="width:100%; display:block; margin-bottom:0;">`;
+            });
+        } else {
+            container.style.padding = "20px";
+            container.innerHTML = content;
+        }
+    }
+
+    // --- DROPDOWN & NAV (Helper Functions) ---
+    function jumpToEp(newEp) {
+        // ✅ FIX: Preserve flag when switching episodes
+        let url = `read.html?id=${id}&ep=${newEp}${fromString}`;
+        if (lang) url += `&lang=${lang}`;
+        location.href = url;
+    }
+
+    function setupStoryDropdown(episodes) {
+        selectBox.style.display = "block";
+        selectBox.innerHTML = ""; 
+        let allEps = Object.keys(episodes).sort((a,b) => a - b);
+        allEps.forEach(epNum => {
+            let option = document.createElement("option");
+            option.value = epNum;
+            option.text = (lang === 'kh' ? 'ភាគ ' : 'Episode ') + epNum;
+            if (parseInt(epNum) === ep) option.selected = true;
+            selectBox.appendChild(option);
+        });
+    }
+
+    function setupDropdown() {
+    selectBox.style.display = "block";
+    selectBox.innerHTML = ""; 
+    let allEps = Object.keys(data.episodes).sort((a,b) => a - b);
+    
+    // Determine label: ជំពូក (Chapter) or ភាគ (Episode)
+    let label = (data.type === "novel") ? "ជំពូក " : "ភាគ ";
+
+    allEps.forEach(epNum => {
+        let option = document.createElement("option");
+        option.value = epNum;
+        option.text = label + epNum; // This changes the text inside the selector
+        if (parseInt(epNum) === ep) option.selected = true;
+        selectBox.appendChild(option);
+    });
+}
+
+    function setupStoryNavigation(episodes) {
+        const navBar = document.getElementById("nav-controls");
+        const btnPrev = document.getElementById("btn-prev");
+        navBar.style.display = "flex"; 
+        if (ep <= 1) btnPrev.style.display = "none";
+        else btnPrev.style.display = "block";
+    }
+
+    function setupNavigation() {
+        const navBar = document.getElementById("nav-controls");
+        const btnPrev = document.getElementById("btn-prev");
+        navBar.style.display = "flex"; 
+        if (ep <= 1) btnPrev.style.display = "none";
+        else btnPrev.style.display = "block";
+    }
+
+    function handleNext() {
+        let nextExists = false;
+        if (data.type === "story") {
+            let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
+            if (episodes[ep + 1]) nextExists = true;
+        } else {
+            if (data.episodes[ep + 1]) nextExists = true;
+        }
+
+        if (nextExists) {
+            jumpToEp(ep + 1);
+        } else {
+            document.getElementById("end-popup").style.display = "flex";
+        }
+    }
+
+    function changeEp(direction) {
+        jumpToEp(ep + direction);
+    }
+    
+    function closePopup() { document.getElementById("end-popup").style.display = "none"; }
+</script>
+</body>
+</html>
