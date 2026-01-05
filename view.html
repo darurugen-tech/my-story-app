@@ -40,16 +40,8 @@
     <hr style="border: none; border-bottom: 1px solid #222; margin: 20px;">
     
     <div class="section-title">Episodes</div>
-    <div id="ep-list" style="padding-bottom: 40px;"></div>
-
-</div>
-</div>
-
-    <div id="d-desc" style="padding: 0 20px; font-size: 13px; color: #ccc;"></div>
-    <hr style="border-color:#333; margin: 20px;">
     
-    <div class="section-title">Episodes</div>
-    <div id="ep-list"></div>
+    <div id="ep-list" style="padding-bottom: 40px;"></div>
 
 </div>
 
@@ -92,32 +84,22 @@
             if (data.type === "story") {
                 document.querySelector(".section-title").innerText = "Select Language 🌐";
                 
-                // 1. Start Building the Button Group
                 let buttonsHTML = '<div class="read-btn-group" style="margin-bottom: 20px;">';
-                let firstLang = null; // We need to know which one to open first
+                let firstLang = null; 
 
-                // 2. CHECK: Does Khmer exist?
                 if (data.episodes_kh) {
-                    buttonsHTML += `
-                        <button class="read-btn btn-kh" onclick="showChapters('kh')">
-                            Khmer 🇰🇭
-                        </button>`;
+                    buttonsHTML += `<button class="read-btn btn-kh" onclick="showChapters('kh')">Khmer 🇰🇭</button>`;
                     if (!firstLang) firstLang = 'kh';
                 }
 
-                // 3. CHECK: Does English exist?
                 if (data.episodes_en) {
-                    buttonsHTML += `
-                        <button class="read-btn btn-en" onclick="showChapters('en')">
-                            English 🇬🇧
-                        </button>`;
+                    buttonsHTML += `<button class="read-btn btn-en" onclick="showChapters('en')">English 🇬🇧</button>`;
                     if (!firstLang) firstLang = 'en';
                 }
 
                 buttonsHTML += '</div><div id="chapter-container"></div>';
                 listDiv.innerHTML = buttonsHTML;
                 
-                // 4. Open the available language automatically
                 if (firstLang) {
                     showChapters(firstLang);
                 } else {
@@ -125,28 +107,35 @@
                 }
 
             } 
-            // --- SCENARIO B: COMIC / NOVEL ---
+            // --- SCENARIO B: COMIC / NOVEL (Updated for Intro) ---
             else {
-    // 1. Change the Section Header based on type
-    let sectionText = (data.type === "novel") ? "មាតិកា (Chapters)" : "ភាគទាំងអស់ (Episodes)";
-    document.querySelector(".section-title").innerText = sectionText;
+                let sectionText = (data.type === "novel") ? "មាតិកា (Chapters)" : "ភាគទាំងអស់ (Episodes)";
+                document.querySelector(".section-title").innerText = sectionText;
 
-    let episodes = Object.keys(data.episodes);
-    episodes.sort((a, b) => b - a);
-    episodes.forEach(epNum => {
-        
-        // 2. Change the Item text
-        // If novel -> "ជំពូក", if comic -> "ភាគ"
-        let label = (data.type === "novel") ? "ជំពូកទី" : "ភាគ";
+                let episodes = Object.keys(data.episodes);
+                // Sort Descending (5, 4, 3, 2, 1, 0)
+                episodes.sort((a, b) => b - a);
 
-        listDiv.innerHTML += `
-            <div class="chapter-item" onclick="location.href='read.html?id=${id}&ep=${epNum}${fromString}'">
-                <span>${label} ${epNum}</span>
-                <span style="color:gray;">FREE</span>
-            </div>
-        `;
-    });
-}
+                episodes.forEach(epNum => {
+                    // --- ✅ INTRO LOGIC ADDED HERE ---
+                    let label;
+                    
+                    if (epNum == '0') {
+                        label = "✨ Intro"; // Special Name for 0
+                    } else if (data.type === "novel") {
+                        label = "ជំពូកទី " + epNum;
+                    } else {
+                        label = "ភាគ " + epNum;
+                    }
+
+                    listDiv.innerHTML += `
+                        <div class="chapter-item" onclick="location.href='read.html?id=${id}&ep=${epNum}${fromString}'">
+                            <span>${label}</span>
+                            <span style="color:gray;">FREE</span>
+                        </div>
+                    `;
+                });
+            }
         } else {
             document.getElementById("d-title").innerText = "Story Not Found";
         }
@@ -159,13 +148,15 @@
         container.innerHTML = ""; 
 
         let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
-        
         let epKeys = Object.keys(episodes).sort((a,b) => b - a); 
         
         epKeys.forEach(epNum => {
+            // Check for Intro in Stories too
+            let displayLabel = (epNum == '0') ? "✨ Intro" : ((lang === 'kh' ? 'ភាគ' : 'Episode') + " " + epNum);
+
             container.innerHTML += `
                 <div class="chapter-item" onclick="location.href='read.html?id=${id}&lang=${lang}&ep=${epNum}${fromString}'">
-                    <span>${lang === 'kh' ? 'ភាគ' : 'Episode'} ${epNum}</span>
+                    <span>${displayLabel}</span>
                     <span style="color:gray;">Read</span>
                 </div>
             `;
