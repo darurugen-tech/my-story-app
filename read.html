@@ -5,63 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reading</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Small override for the dropdown to look nice in the center */
-        #ep-select {
-            background-color: #222;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
-            margin-top: 4px;
-            max-width: 150px;
-        }
-    </style>
 </head>
 <body>
 <div class="app-container">
 
-    <div class="header">
+    <div class="header read-page-header" style="padding: 25px 20px;">
         <div onclick="goBack()" style="cursor: pointer; z-index: 20;">
             <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
         </div>
 
-        <div class="reader-header-content">
-            <div id="r-title" style="font-size:14px; font-weight:bold;">Loading...</div>
-            
-            <select id="ep-select" onchange="jumpToEp(this.value)" style="display:none;">
-                </select>
+        <div class="reader-header-content" style="display: flex; flex-direction: column; gap: 3px;">
+            <div id="r-title" style="font-size:16px; font-weight:bold; margin-bottom: 5px;">Loading...</div>
+            <select id="ep-select" onchange="jumpToEp(this.value)" style="display:none; padding: 4px;"></select>
         </div>
 
+        <div class="icon-box" onclick="toggleThemeLocal()">
+            <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn">
         </div>
+    </div>
 
-    <div id="content-area" style="padding-bottom: 20px;"></div>
+    <div id="content-area" class="read-container"></div>
 
-    <div id="nav-controls" class="nav-bar" style="display:none;">
-        <button id="btn-prev" class="nav-btn" onclick="changeEp(-1)">Previous</button>
-        <button id="btn-next" class="nav-btn" onclick="handleNext()">Next Episode</button>
+    <div class="read-page-footer" style="padding: 15px 40px; box-sizing: border-box;">
+        <button id="btn-prev-big" onclick="handlePrev()">Previous</button>
+        <button id="btn-next-big" onclick="handleNext()">Next Episode</button>
     </div>
 
     <div id="end-popup" class="popup-overlay">
         <div class="popup-box">
-            <h3>🎉 All Caught Up!</h3>
-            <p>You have reached the latest episode.</p>
-            <p style="font-size:12px; color:gray;">Check back later for updates.</p>
-            <button class="popup-btn" onclick="closePopup()">Okay</button>
+            <h3 style="font-weight: normal;">អ្នកបានមកដល់ទំព័រចុងក្រោយ</h3>
+            <p style="font-size: 17px; margin-top: 0; margin-bottom: 0px; color: #7bff86;">
+                You have reached the end of the available episodes.
+            </p>
+            <button class="popup-btn" onclick="closePopup()" 
+    style="width: auto; padding: 10px 40px; background-color: #33b13d; color: white;">
+    Okay
+</button>
         </div>
     </div>
-
 </div>
 
 <script src="stories.js"></script>
+<script src="app.js"></script>
+
 <script>
+    // --- 1. SCROLL LOGIC ---
+    let isScrolling;
+    window.addEventListener('scroll', function ( event ) {
+        document.body.classList.add('is-scrolling');
+        window.clearTimeout( isScrolling );
+        isScrolling = setTimeout(function() {
+            document.body.classList.remove('is-scrolling');
+        }, 150);
+    }, false);
+
+    // --- 2. THEME LOGIC ---
+    const savedTheme = localStorage.getItem("theme");
+    const themeBtn = document.getElementById("theme-btn");
+    
+    if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+        if(themeBtn) themeBtn.src = "images/icons/icon_moon.png";
+    }
+
+    function toggleThemeLocal() {
+        document.body.classList.toggle("light-mode");
+        const btn = document.getElementById("theme-btn");
+        if (document.body.classList.contains("light-mode")) {
+            localStorage.setItem("theme", "light");
+            btn.src = "images/icons/icon_moon.png";
+        } else {
+            localStorage.setItem("theme", "dark");
+            btn.src = "images/icons/icon_sun.png";
+        }
+    }
+
+    // --- 3. STORY LOADING LOGIC ---
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const lang = params.get('lang'); 
     let ep = parseInt(params.get('ep')); 
-    
-    // 1. GET THE FLAG
     const fromWhere = params.get('from');
     const fromString = fromWhere ? `&from=${fromWhere}` : "";
 
@@ -69,117 +92,146 @@
     const container = document.getElementById("content-area");
     const selectBox = document.getElementById("ep-select");
 
-    // --- ✅ FIX: RETURN BUTTON ---
-    // Now we send the flag back to view.html
     function goBack() {
         location.href = `view.html?id=${id}${fromString}`;
     }
 
     if (data) {
-        // --- STORY LOGIC ---
         if (data.type === "story") {
             document.getElementById("r-title").innerText = data.title;
             let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
             if (episodes && episodes[ep]) {
-                setupStoryDropdown(episodes);
-                renderImages(episodes[ep]);
-                setupStoryNavigation(episodes);
+                setupDropdown(episodes, true);
+                renderContent(episodes[ep]);
+                updateNavButtons(); // <--- CALL THE BUTTON CHECK
             }
-        } 
-        // --- COMIC / NOVEL LOGIC ---
-        else if (data.episodes && data.episodes[ep]) {
+        } else if (data.episodes && data.episodes[ep]) {
             document.getElementById("r-title").innerText = data.title;
-            setupDropdown();
-            renderImages(data.episodes[ep]);
-            setupNavigation();
+            setupDropdown(data.episodes, false);
+            renderContent(data.episodes[ep]);
+            updateNavButtons(); // <--- CALL THE BUTTON CHECK
         }
     }
 
-    function renderImages(content) {
-        if (Array.isArray(content)) {
-            content.forEach(imgSrc => {
-                container.innerHTML += `<img src="${imgSrc}" style="width:100%; display:block; margin-bottom:0;">`;
-            });
+    // --- THE MAIN CONTENT RENDERER ---
+    function renderContent(source) {
+        container.innerHTML = ""; 
+        container.removeAttribute("style");
+        
+        if (Array.isArray(source)) {
+            let firstItem = source[0] || "";
+            
+            // --- IMAGE MODE (Comics) ---
+            if (firstItem.includes("images/") || firstItem.includes(".jpg") || firstItem.includes(".png")) {
+                container.className = "read-container image-mode";
+                source.forEach(imgSrc => {
+                    container.innerHTML += `<img src="${imgSrc}">`;
+                });
+            } 
+            // --- TEXT MODE (Novels) ---
+            else {
+                container.className = "read-container text-mode";
+                
+                // 1. FORCE THE STYLE DIRECTLY
+                container.style.fontSize = "26px";     
+                container.style.lineHeight = "1.3";    
+                
+                // 👇 UPDATED: Changed 80px back to 140px so it clears the header
+                // [Top: 140px] [Right: 20px] [Bottom: 200px] [Left: 20px]
+                container.style.padding = "110px 20px 200px 20px";
+                
+                container.style.fontFamily = "'Kantumruy Pro', sans-serif";
+                container.style.textAlign = "left";
+
+                // 2. JOIN TEXT (Using Divs for Space Control)
+                let htmlContent = source.map(line => 
+                    `<div style="margin-bottom: 20px;">${line}</div>`
+                ).join(""); 
+
+                // 👇 FIXED CSS VARIABLE SYNTAX HERE (added 'var')
+                const customStyles = `
+                    <style>
+                        /* Style for your Title */
+                        .chapter-title {
+                            font-size: 32px !important;    
+                            font-weight: bold !important;  
+                            text-align: center !important; 
+                            color: var(--text-color) !important; /* Fixed typo */
+                            margin-bottom: 30px !important;
+                            line-height: 1.4 !important;
+                        }
+                    </style>
+                `;
+
+                container.innerHTML = customStyles + htmlContent;
+            }
         } else {
-            container.style.padding = "20px";
-            container.innerHTML = content;
+            // String Content Mode
+            container.className = "read-container text-mode";
+            
+            // Force Styles Here too
+            container.style.fontSize = "26px";
+            container.style.lineHeight = "1.3";
+            
+            // Matches the array mode
+            container.style.padding = "110px 20px 200px 20px";
+            
+            container.style.fontFamily = "'Kantumruy Pro', sans-serif";
+            container.style.textAlign = "left";
+
+            container.innerHTML = `<p>${source}</p>`;
         }
     }
 
-    // --- DROPDOWN & NAV (Helper Functions) ---
+    // --- 4. HIDE PREVIOUS BUTTON LOGIC ---
+    function updateNavButtons() {
+        const btnPrev = document.getElementById("btn-prev-big");
+        // If Episode is 0 (or less), hide the button
+        if (ep <= 0) {
+            btnPrev.style.display = "none";
+        } else {
+            btnPrev.style.display = "block";
+        }
+    }
+
     function jumpToEp(newEp) {
-        // ✅ FIX: Preserve flag when switching episodes
         let url = `read.html?id=${id}&ep=${newEp}${fromString}`;
         if (lang) url += `&lang=${lang}`;
         location.href = url;
     }
 
-    function setupStoryDropdown(episodes) {
+    function setupDropdown(episodes, isStory) {
         selectBox.style.display = "block";
         selectBox.innerHTML = ""; 
-        let allEps = Object.keys(episodes).sort((a,b) => a - b);
-        allEps.forEach(epNum => {
+        Object.keys(episodes).sort((a,b) => a - b).forEach(epNum => {
             let option = document.createElement("option");
             option.value = epNum;
-            option.text = (lang === 'kh' ? 'ភាគ ' : 'Episode ') + epNum;
+            if(isStory) {
+                option.text = (epNum == '0') ? "Intro" : ((lang === 'kh' ? 'ភាគ ' : 'Episode ') + epNum);
+            } else {
+                option.text = (epNum == '0') ? "អារម្ភកថា" : ((data.type === "novel" ? "ជំពូក " : "ភាគ ") + epNum);
+            }
             if (parseInt(epNum) === ep) option.selected = true;
             selectBox.appendChild(option);
         });
     }
 
-    function setupDropdown() {
-    selectBox.style.display = "block";
-    selectBox.innerHTML = ""; 
-    let allEps = Object.keys(data.episodes).sort((a,b) => a - b);
-    
-    // Determine label: ជំពូក (Chapter) or ភាគ (Episode)
-    let label = (data.type === "novel") ? "ជំពូក " : "ភាគ ";
-
-    allEps.forEach(epNum => {
-        let option = document.createElement("option");
-        option.value = epNum;
-        option.text = label + epNum; // This changes the text inside the selector
-        if (parseInt(epNum) === ep) option.selected = true;
-        selectBox.appendChild(option);
-    });
-}
-
-    function setupStoryNavigation(episodes) {
-        const navBar = document.getElementById("nav-controls");
-        const btnPrev = document.getElementById("btn-prev");
-        navBar.style.display = "flex"; 
-        if (ep <= 1) btnPrev.style.display = "none";
-        else btnPrev.style.display = "block";
-    }
-
-    function setupNavigation() {
-        const navBar = document.getElementById("nav-controls");
-        const btnPrev = document.getElementById("btn-prev");
-        navBar.style.display = "flex"; 
-        if (ep <= 1) btnPrev.style.display = "none";
-        else btnPrev.style.display = "block";
-    }
-
+    // --- NAVIGATION ---
     function handleNext() {
-        let nextExists = false;
-        if (data.type === "story") {
-            let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
-            if (episodes[ep + 1]) nextExists = true;
-        } else {
-            if (data.episodes[ep + 1]) nextExists = true;
-        }
-
-        if (nextExists) {
+        let episodes = (data.type === "story") ? ((lang === 'kh') ? data.episodes_kh : data.episodes_en) : data.episodes;
+        if (episodes[ep + 1]) {
             jumpToEp(ep + 1);
         } else {
             document.getElementById("end-popup").style.display = "flex";
         }
     }
 
-    function changeEp(direction) {
-        jumpToEp(ep + direction);
+    function handlePrev() {
+        if (ep > 0) {
+            jumpToEp(ep - 1);
+        }
     }
-    
+
     function closePopup() { document.getElementById("end-popup").style.display = "none"; }
 </script>
 </body>

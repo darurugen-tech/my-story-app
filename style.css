@@ -2,24 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
 :root {
-    --primary: #00E5FF; /* Cyan */
-    --accent: #FF4081;  /* Pink */
+    --primary: #00E5FF;
+    --accent: #FF4081;
     --bg-color: #121212;
     --card-bg: #1e1e1e;
     --text-color: #ffffff;
     --sub-text: #aaaaaa;
-    --mark: #a18ac7;
-    
-    /* HEADER COLORS */
-    --header-bg: #333333; 
-
-    /* BUTTON COLORS */
-    --read-btn-color: rgba(0, 0, 0, 0.7); /* Default */
-    --btn-kh-color: rgba(0, 128, 0, 0.7); /* Greenish */
-    --btn-en-color: rgba(128, 0, 128, 0.7); /* Purplish */
+    --search-color: rgba(82, 82, 82, 0.329);
+    --read-btn-color: rgba(0, 0, 0, 0.7);
+    --btn-kh-color: rgba(0, 128, 0, 0.7);
+    --btn-en-color: rgba(128, 0, 128, 0.7);
 }
 
-/* LIGHT MODE VARIABLES */
 body.light-mode {
     --bg-color: #f0f0f0;
     --card-bg: #ffffff;
@@ -33,9 +27,8 @@ body {
     font-family: 'Roboto', 'Kantumruy Pro', sans-serif;
 }
 
-/* APP CONTAINER */
 .app-container {
-    width: 100%;            /* Ensure it takes full width on small phones */
+    width: 100%;
     max-width: 480px;
     min-height: 100vh;
     margin: 0 auto;
@@ -44,8 +37,8 @@ body {
     position: relative;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
     padding-bottom: 50px;
-    overflow-x: hidden;     /* 👈 ADD THIS: Prevents horizontal bleeding */
-    box-sizing: border-box; /* 👈 ADD THIS: Includes padding in width */
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 /* --- HEADER --- */
@@ -54,7 +47,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background-color: var(--header-bg) !important; /* Force Custom Color */
+    background-color: #1a1a1a !important; 
+    color: #ffffff !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     position: sticky;
     top: 0;
@@ -63,29 +57,36 @@ body {
     width: 100%;
 }
 
-/* Force Header Text to White */
 .header .logo-text, 
 .header .logo-k,
+.header #r-title, 
+.header #page-title,
 .header .icon-label {
     color: #ffffff !important;
 }
 
 .logo-text { 
     font-weight: bold; font-size: 22px; 
-    flex: 1; text-align: center; /* Center logo */
+    flex: 1; text-align: center; 
 }
 
-/* HEADER ICONS */
-.header > a .icon-btn, 
-.header .icon-btn {
-    width: 32px !important;
-    height: 32px !important;
+/* --- ICONS --- */
+.icon-btn {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
     object-fit: contain;
-    margin: 0 !important;
-    display: block;
 }
 
-/* MODE & SAVE BUTTONS (Top Right) */
+.icon-back-special {
+    height: 26px !important;
+    width: auto !important;
+    min-width: 40px !important;
+    max-width: 80px !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
 .header-icons {
     display: flex;
     align-items: center;
@@ -102,57 +103,33 @@ body {
     cursor: pointer;
 }
 
-.header-icons .icon-btn {
-    width: 24px !important;
-    height: 24px !important;
-    margin-bottom: 4px !important;
+.icon-box .icon-btn {
+    margin-bottom: 4px; 
 }
 
 .icon-label {
-    font-size: 10px !important;
+    font-size: 10px;
     font-family: sans-serif;
     display: block;
+    color: #ffffff !important; 
 }
 
-/* SPECIAL WIDE BACK BUTTON */
-.icon-back-special {
-    height: 26px !important;
-    width: auto !important;
-    min-width: 40px !important;
-    max-width: 80px !important;
-    object-fit: contain !important;
-    display: block !important;
-}
-
-/* --- BANNERS & SECTIONS --- */
-.section-title {
-    padding: 15px 20px;
-    font-size: 18px;
-    font-weight: bold;
-    
-    /* Sets color based on theme (Black in Light, White in Dark) */
-    color: var(--text-color); 
-    
-    /* ❌ REMOVED: border-bottom: 1px solid #333; */
-    border: none !important; 
-}
-
-/* --- BANNER (FIXED: Full Size, No Black Bars) --- */
+/* --- BANNERS --- */
 .banner-wrapper {
     width: 100%;
     display: block;
-    margin-bottom: 20px; /* Space below banner */
+    margin-bottom: 20px;
     border-radius: 8px;
-    overflow: hidden;    /* Clips the corners */
+    overflow: hidden;
     position: relative;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Adds pop */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .banner {
     width: 100%;
-    height: auto;        /* Let the image decide the height */
-    aspect-ratio: 21/9;  /* 👈 Force a nice cinematic shape */
-    object-fit: cover;   /* 👈 CRITICAL: Fills the box, removes black bars */
+    height: auto;
+    aspect-ratio: 21/9;
+    object-fit: cover;
     display: block;
 }
 
@@ -165,17 +142,13 @@ body {
     margin-bottom: 15px;
     border-radius: 8px;
     overflow: hidden;
-    
-    /* FORCE REMOVE LINES */
     text-decoration: none !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    
     transition: transform 0.1s, opacity 0.1s;
 }
 
-/* Ensure the image block covers everything */
 .banner-wrapper img {
     display: block;
     width: 100%;
@@ -189,32 +162,16 @@ body {
     opacity: 0.9;
 }
 
-/* BANNER LABEL (The Black Bubble) */
 .banner-label {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
+    bottom: 12px; left: 12px;
+    color: white; font-size: 16px; font-weight: bold;
     z-index: 10;
     background-color: rgba(0, 0, 0, 0.65);
     padding: 6px 14px;
     border-radius: 50px;
     backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* CSS ARROW */
-.css-arrow {
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    display: inline-block;
-    padding: 3px;
-    transform: rotate(-45deg);
-    margin-bottom: 1px;
+    display: flex; align-items: center; gap: 8px;
 }
 
 /* --- STORY GRID --- */
@@ -240,16 +197,6 @@ body {
     object-fit: cover;
 }
 
-.detail-cover {
-    width: 30%;      /* 👈 Use % instead of px so it shrinks on tiny phones */
-    min-width: 80px; /* But don't let it get too tiny */
-    max-width: 120px;
-    aspect-ratio: 2/3;
-    object-fit: cover;
-    border-radius: 8px;
-    flex-shrink: 0;  /* 👈 Prevents the title from squishing the cover */
-}
-
 .story-title {
     font-size: 12px;
     margin-top: 5px;
@@ -263,7 +210,6 @@ body {
     color: var(--sub-text);
 }
 
-/* BADGES */
 .badge {
     position: absolute;
     top: 5px; right: 5px;
@@ -277,28 +223,23 @@ body {
 .badge-new { background-color: #ff0000; }
 .badge-up  { background-color: #00E5FF; color: black; }
 
-/* --- DETAIL & READ PAGE --- */
 .detail-header {
     display: flex;
     padding: 20px;
     gap: 15px;
-    width: 100%;             /* Ensure header fits screen */
-    box-sizing: border-box;  /* Include padding in width */
+    width: 100%;
+    box-sizing: border-box;
     align-items: flex-start;
-    overflow: hidden;        /* Prevent image from sticking out */
+    overflow: hidden;
 }
+.detail-info { flex: 1; min-width: 0; }
 
-.detail-header {
-    display: flex;
-    padding: 20px;
-    gap: 15px;
-    width: 100%;             /* Ensure header fits screen */
-    box-sizing: border-box;  /* Include padding in width */
-    overflow: hidden;        /* Prevent image from sticking out */
-}
-.detail-info {
-    flex: 1;
-    min-width: 0;            /* 👈 CRITICAL: Allows text to wrap instead of pushing the cover off-screen */
+.section-title {
+    padding: 15px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-color);
+    border: none !important;
 }
 
 .chapter-item {
@@ -310,13 +251,11 @@ body {
     cursor: pointer;
 }
 
-/* --- READ BUTTONS (Glass Pill) --- */
 .read-btn-group {
     display: flex;
     gap: 15px;
     margin-top: 15px;
 }
-
 .read-btn {
     background-color: var(--read-btn-color);
     color: white;
@@ -326,33 +265,118 @@ body {
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
     backdrop-filter: blur(5px);
+    display: flex; align-items: center; gap: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    transition: transform 0.2s, background-color 0.2s;
 }
-
-.read-btn:active {
-    transform: scale(0.95);
-    opacity: 0.9;
-}
-
-/* Specific Colors */
 .read-btn.btn-kh { background-color: var(--btn-kh-color) !important; }
 .read-btn.btn-en { background-color: var(--btn-en-color) !important; }
 
-/* Small arrow inside button */
-.btn-arrow {
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    display: inline-block;
-    padding: 3px;
-    transform: rotate(-45deg);
+.search-container {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+}
+.search-container input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 50px;
+    border: none;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    outline: none;
+    font-family: inherit;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+}
+.search-container button {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
 }
 
-/* --- FOOTER --- */
+.scroll-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 15px;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+}
+.scroll-container .story-card:first-child { border-left: 20px solid transparent; }
+.scroll-container .story-card {
+    min-width: 110px; width: 110px;
+    flex-shrink: 0; scroll-snap-align: start;
+}
+.scroll-container::-webkit-scrollbar { display: none; }
+
+.reader-header-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    z-index: 10; 
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border-top: 1px solid #333;
+}
+.nav-btn {
+    flex: 1;
+    padding: 12px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+#btn-prev { background-color: #333; color: white; }
+#btn-next { background-color: var(--search-color); color: rgb(255, 255, 255); }
+
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+.popup-box {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border: 1px solid #444;
+}
+.popup-btn {
+    background: var(--primary);
+    border: none;
+    padding: 10px 20px;
+    color: #000;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 100%;
+}
+
 .footer {
     text-align: center;
     padding: 30px;
@@ -360,7 +384,7 @@ body {
     color: var(--sub-text);
 }
 
-/* --- BOOKMARK DRAWER (Phone Sized) --- */
+/* --- BOOKMARK DRAWER --- */
 .bookmark-overlay {
     position: fixed;
     top: 0; 
@@ -378,7 +402,7 @@ body {
 
 .bookmark-drawer {
     position: fixed;
-    bottom: -100%;
+    bottom: -100%; 
     left: 50%; 
     transform: translateX(-50%);
     width: 100%; 
@@ -387,12 +411,12 @@ body {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     z-index: 999;
-    padding: 20px 15px;      /* Slightly less side padding */
+    padding: 20px 15px;
     transition: bottom 0.3s ease-out;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-    box-sizing: border-box;  /* 👈 CRITICAL: Stops padding from pushing width out */
+    box-sizing: border-box;
 }
 
 .bookmark-overlay.active { display: block; opacity: 1; }
@@ -417,221 +441,177 @@ body {
     margin-bottom: 10px;
     border-radius: 8px;
     border: 1px solid #333;
-    width: 100%;             /* 👈 ADD THIS: Ensures it fits the drawer */
-    box-sizing: border-box;  /* 👈 ADD THIS: Prevents the border from cutting off */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .bookmark-item img {
-    width: 50px; height: 70px;
+    width: 50px !important;
+    height: 70px !important;
     object-fit: cover;
     border-radius: 4px;
     margin-right: 15px;
+    display: block;
 }
 
-.bookmark-info { flex-grow: 1; color: #ddd; }
+.bookmark-info { flex-grow: 1; color: #ddd; text-align: left; }
 
 .btn-remove {
     background: transparent;
     border: none;
-    color: #ff4444;
-    font-size: 12px;
     cursor: pointer;
+    padding: 5px;
 }
 
-/* --- READER NAVIGATION --- */
-.nav-bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    background-color: var(--card-bg);
-    border-top: 1px solid #333;
-}
-
-.nav-btn {
-    flex: 1; /* Both buttons take equal width */
-    padding: 12px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-#btn-prev {
-    background-color: #333;
-    color: white;
-}
-
-#btn-next {
-    background-color: var(--primary); /* Cyan */
-    color: black;
-}
-
-#btn-next:active, #btn-prev:active {
-    opacity: 0.8;
-    transform: scale(0.98);
-}
-
-/* --- READER HEADER FIX (Perfect Centering) --- */
-.header {
-    position: sticky; /* Keep sticky */
-    top: 0;
-    /* Ensure the header can hold the absolute center element */
-    position: relative; 
-    justify-content: space-between;
-}
-
-.reader-header-content {
-    /* Force this to the DEAD CENTER of the header */
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    z-index: 10; /* Keep it above other things */
-}
-
-/* --- END OF STORY POPUP --- */
-.popup-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 2000; /* Very high up */
-    display: none; /* Hidden by default */
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(3px); /* Blur background */
-}
-
-.popup-box {
-    background: var(--card-bg);
-    padding: 30px;
-    border-radius: 12px;
+/* --- POPUP NOTIFICATION --- */
+#toast-notification {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: rgba(40, 40, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
     text-align: center;
-    width: 80%;
-    max-width: 300px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border: 1px solid #444;
-    animation: popIn 0.3s ease-out;
+    border-radius: 16px;
+    padding: 20px 30px;
+    position: fixed;
+    z-index: 2000;
+    left: 50%;
+    top: 80px; 
+    transform: translateX(-50%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.4s ease, top 0.4s ease;
+    backdrop-filter: blur(5px);
 }
 
-.popup-box h3 {
-    margin-top: 0;
-    color: var(--primary);
+#toast-notification.show {
+    visibility: visible;
+    opacity: 1;
+    top: 100px;
 }
 
-.popup-btn {
-    background: var(--primary);
-    border: none;
-    padding: 10px 20px;
-    color: #000;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    margin-top: 15px;
-    width: 100%;
+/* --- FORCE NO FILTERS --- */
+.icon-back-special,
+#theme-btn, 
+#theme-icon, 
+#btn-save,
+#btn-library,
+.header-icons .icon-btn {
+    filter: none !important; 
+    opacity: 1 !important;
 }
 
-@keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* --- SEARCH BAR --- */
-.search-container {
-    display: flex;
-    padding: 15px;
-    gap: 10px;
-}
-
-.search-container input {
-    flex: 1;
-    padding: 10px 15px;
-    border-radius: 50px;
-    border: none;
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    outline: none;
-    font-family: inherit;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-}
-
+/* --- CUSTOM SEARCH & TRASH ICONS --- */
 .search-container button {
-    background-color: var(--primary);
+    background-color: var(--search-color);
     border: none;
     border-radius: 50%;
     width: 40px;
     height: 40px;
     cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.2s;
-}
-
-.search-container button:active {
-    transform: scale(0.9);
-}
-
-/* --- SCROLL LIST FIX --- */
-.scroll-container {
+    padding: 0;
     display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 15px;
-    padding: 10px 0; /* Remove horizontal padding here */
-    -webkit-overflow-scrolling: touch;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 🟢 THE FIX: Add an invisible border to the first card */
-.scroll-container .story-card:first-child {
-    border-left: 20px solid transparent; /* Acts as a forced gap */
+.search-container button img {
+    width: 25px; 
+    height: 25px;
+    object-fit: contain;
+    filter: none !important; 
 }
 
-/* Optional: Add space at the very end so last card doesn't touch the right edge */
-.scroll-container::after {
-    content: "";
-    min-width: 20px;
-    display: block;
+.btn-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 0 0 10px;
 }
 
-/* Hide the ugly scrollbar */
-.scroll-container::-webkit-scrollbar {
-    display: none;
+.btn-remove img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    filter: none !important; 
 }
 
-/* Fix the card size so they don't squish */
-.scroll-container .story-card {
-    min-width: 110px;          /* Minimum width of one card */
-    width: 110px;
-    flex-shrink: 0;            /* Prevent shrinking */
-    scroll-snap-align: start;  /* Snap to left */
+/* --- LOGO SIZE --- */
+.app-logo {
+    width: 42px !important; 
+    height: 42px !important; 
 }
 
-.scroll-container.active {
-    cursor: grabbing; /* Shows a closed hand when dragging */
+/* =========================================================
+   FINAL READER VIEW LOGIC (Paste at bottom of style.css)
+   ========================================================= */
+
+/* 1. HEADER & FOOTER (Fixed, Dark) */
+.read-page-header, 
+.read-page-footer {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    background-color: #111 !important; 
+    border-bottom: 1px solid #333;
+    color: white !important;
 }
 
-/* 1. Fix the main reading container */
+.read-page-header { top: 0; }
+.read-page-footer { bottom: 0; border-top: none !important; padding: 15px; display: flex; gap: 10px; justify-content: center; }
+
+/* Hide on Scroll */
+body.is-scrolling .read-page-header { transform: translate(-50%, -100%); }
+body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
+
+/* Footer Buttons */
+#btn-prev-big, #btn-next-big {
+    flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;
+}
+#btn-next-big { background-color: #333; color: white; }
+#btn-prev-big { background-color: #222; color: #aaa; }
+
+/* 2. READER CONTAINER (Base) */
 .read-container {
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    padding: 20px 25px; /* 👈 Increase the 25px to push text away from the edges */
-    box-sizing: border-box; /* 👈 This stops the padding from making the box too wide */
+    box-sizing: border-box; 
     overflow-x: hidden;
+    padding-top: 80px; 
+    
+    /* ADDED EXTRA PADDING so text doesn't hide behind footer */
+    padding-bottom: 150px !important; 
 }
 
-/* 2. Fix the story text specifically */
-.story-content p {
+/* 3. IMAGE MODE (Comics) */
+.read-container.image-mode {
+    padding-left: 0; padding-right: 0;
+    background-color: #ffffff !important; 
+    font-size: 0; line-height: 0;
+}
+.read-container.image-mode img {
+    width: 100%; height: auto; display: block;
+}
+
+/* 4. TEXT MODE (Novels) */
+.read-container.text-mode {
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: transparent;
+    text-align: left; 
+}
+
+/* DEFAULT TEXT SETTINGS (Can be overridden by read.html) */
+.read-container.text-mode p {
     font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 20px;     /* Based on our pixel discussion */
-    line-height: 1.8;    /* Prevents "feet" and "vowels" from stacking */
-    margin-bottom: 20px;
-    word-wrap: break-word; /* 👈 Ensures long words don't push the screen wide */
-    text-align: justify;
+    margin-top: 0;
+    margin-bottom: 30px; 
+    color: inherit;
+    word-wrap: break-word;
 }

@@ -18,12 +18,16 @@
             World
         </div>
         
-        <div style="width: 40px;"></div>
+        <div style="width: 40px; text-align: right;">
+            <img id="theme-btn" src="images/icons/icon_sun.png" style="width: 24px; height: 24px;" onclick="toggleThemeLocal()">
+        </div>
     </div>
 
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search..." onkeyup="handleLocalSearch(event)">
-        <button onclick="localSearch()">🔍</button>
+        <button onclick="localSearch()">
+            <img src="images/icons/icon_search.png" alt="Search">
+        </button>
     </div>
 
     <div class="story-grid" id="grid-container"></div>
@@ -34,28 +38,40 @@
 <script src="app.js"></script>
 
 <script>
-    // 1. GET URL PARAMETERS
+    // 1. THEME CHECK
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+        document.getElementById("theme-btn").src = "images/icons/icon_moon.png";
+    }
+
+    // 2. TOGGLE FUNCTION
+    function toggleThemeLocal() {
+        document.body.classList.toggle("light-mode");
+        const btn = document.getElementById("theme-btn");
+        if (document.body.classList.contains("light-mode")) {
+            localStorage.setItem("theme", "light");
+            btn.src = "images/icons/icon_moon.png";
+        } else {
+            localStorage.setItem("theme", "dark");
+            btn.src = "images/icons/icon_sun.png";
+        }
+    }
+
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type'); 
     const query = params.get('q'); 
 
-    // 2. SETUP TITLES
     const titles = { 
-        comic: "Comic World 🎨", 
-        novel: "Novel World 📜", 
-        story: "Story World 📖", 
-        search: "Global Search 🔍" 
+        comic: "Comic World", 
+        novel: "Novel World", 
+        story: "Story World", 
+        search: "Global Search" 
     };
     document.getElementById("page-title").innerText = titles[type] || "World";
 
-    // 3. FILL SEARCH BAR (If searching)
-    if (query) {
-        document.getElementById("search-input").value = query;
-    }
+    if (query) document.getElementById("search-input").value = query;
 
-    // ❌ BANNER LOGIC REMOVED (No longer needed)
-
-    // 4. FILL THE GRID (Smart Context Filter)
     const container = document.getElementById("grid-container");
     container.innerHTML = ""; 
 
@@ -65,36 +81,28 @@
         let item = db[key];
         let match = true;
 
-        // FILTER 1: CHECK TYPE
-        if (type !== 'search') {
-            if (item.type !== type) {
-                match = false;
-            }
-        }
+        // 🛑 NEW CODE: SKIP IF NOT RELEASED
+        if (item.released === false) { continue; } 
 
-        // FILTER 2: CHECK SEARCH TEXT
+        if (item.hidden === true) { continue; }
+
+        if (type !== 'search' && item.type !== type) match = false;
+
         if (query) {
             const searchText = query.toLowerCase();
             const titleMatch = item.title.toLowerCase().includes(searchText);
             const authorMatch = item.author.toLowerCase().includes(searchText);
-            
-            if (!titleMatch && !authorMatch) {
-                match = false;
-            }
+            if (!titleMatch && !authorMatch) match = false;
         }
 
-        // RENDER IF PASSED CHECKS
         if (match) {
             count++;
-
-            // ✅ NEW: CREATE BADGE HTML
             let badgeHTML = "";
             if (item.badge) {
                 let badgeClass = (item.badge === "NEW") ? "badge-new" : "badge-up";
                 badgeHTML = `<span class="badge ${badgeClass}">${item.badge}</span>`;
             }
 
-            // ✅ NEW: ADD BADGE TO CARD
             container.innerHTML += `
                 <div class="story-card" onclick="location.href='view.html?id=${item.id}'">
                     ${badgeHTML}
@@ -106,7 +114,6 @@
         }
     }
 
-    // 5. NO RESULTS MESSAGE
     if (count === 0) {
         container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:gray;">
             <h3>No results found</h3>
@@ -114,23 +121,14 @@
         </div>`;
     }
 
-    // --- SEARCH FUNCTIONS ---
     function handleLocalSearch(event) {
-        if (event.key === 'Enter') {
-            localSearch();
-        }
+        if (event.key === 'Enter') localSearch();
     }
 
     function localSearch() {
         const inputVal = document.getElementById("search-input").value;
-        
-        if (inputVal.trim() !== "") {
-            // Keep the current type (e.g., stay in Story World) but add the search query
-            location.href = `world.html?type=${type}&q=${inputVal}`;
-        } else {
-            // Clear search, stay in World
-            location.href = `world.html?type=${type}`;
-        }
+        if (inputVal.trim() !== "") location.href = `world.html?type=${type}&q=${inputVal}`;
+        else location.href = `world.html?type=${type}`;
     }
 </script>
 </body>

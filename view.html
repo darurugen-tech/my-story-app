@@ -13,22 +13,29 @@
         <div onclick="goUp()" style="cursor: pointer;">
             <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
         </div>
-        <img id="btn-save" src="images/icons/icon_bookmark.png" class="icon-btn" alt="Save">
+
+        <div class="header-icons">
+            <div class="icon-box" onclick="toggleThemeLocal()">
+                <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn" alt="Theme">
+                <span id="theme-text" class="icon-label" style="font-size: 10px; color:white;">Light</span>
+            </div>
+            
+            <div class="icon-box">
+                <img id="btn-save" src="images/icons/icon_bookmark.png" class="icon-btn" alt="Save">
+                <span class="icon-label" style="font-size: 10px; color:white;">Saved</span>
+            </div>
+        </div>
     </div>
 
     <div class="detail-header" style="display: flex; align-items: flex-start; gap: 15px; padding: 20px;">
-        
         <img id="d-cover" src="" style="width: 125px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-
         <div class="detail-info" style="flex: 1;">
             <h2 id="d-title" style="margin: 0 0 5px 0; font-size: 22px; color: var(--text-color);">Loading...</h2>
             <div id="d-stats" style="font-size: 14px; color: gray; margin-bottom: 12px;"></div>
-
             <div class="meta-data" style="font-size: 14px; line-height: 1.6; color: var(--text-color);">
                 <p style="margin: 0;"><strong>Writer:</strong> <span id="d-author" style="color: var(--sub-text);"></span></p>
                 <p style="margin: 0;"><strong>Year:</strong> <span id="d-year"></span></p>
             </div>
-
             <p id="d-summary" style="margin-top: 10px; font-size: 13px; font-style: italic; color: var(--sub-text); line-height: 1.4;"></p>
         </div>
     </div>
@@ -40,8 +47,9 @@
     <hr style="border: none; border-bottom: 1px solid #222; margin: 20px;">
     
     <div class="section-title">Episodes</div>
-    
     <div id="ep-list" style="padding-bottom: 40px;"></div>
+
+    <div id="toast-notification">Notification</div>
 
 </div>
 
@@ -49,85 +57,126 @@
 <script src="app.js"></script> 
 
 <script>
+    // --- 1. THEME LOGIC ---
+    const themeBtn = document.getElementById("theme-btn");
+    const themeText = document.getElementById("theme-text");
+
+    function updateThemeUI(isLight) {
+        if (isLight) {
+            document.body.classList.add("light-mode");
+            if(themeBtn) themeBtn.src = "images/icons/icon_moon.png";
+            if(themeText) themeText.innerText = "Dark";
+        } else {
+            document.body.classList.remove("light-mode");
+            if(themeBtn) themeBtn.src = "images/icons/icon_sun.png";
+            if(themeText) themeText.innerText = "Light";
+        }
+    }
+
+    const savedTheme = localStorage.getItem("theme");
+    updateThemeUI(savedTheme === "light");
+
+    function toggleThemeLocal() {
+        document.body.classList.toggle("light-mode");
+        const isLight = document.body.classList.contains("light-mode");
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+        updateThemeUI(isLight);
+    }
+
+    // --- 2. POPUP NOTIFICATION FUNCTION ---
+    function showToast(message) {
+        const toast = document.getElementById("toast-notification");
+        toast.innerText = message;
+        toast.className = "show"; 
+        
+        setTimeout(function(){ 
+            toast.className = toast.className.replace("show", ""); 
+        }, 3000);
+    }
+
+    // --- 3. LOAD STORY DATA ---
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const fromWhere = params.get('from'); 
     const fromString = fromWhere ? `&from=${fromWhere}` : "";
-    let currentType = "";
 
-    if (typeof db === 'undefined') {
-        alert("Error: stories.js is not loaded!");
-    } else {
+    if (typeof db !== 'undefined') {
         const data = db[id];
-
         if (data) {
-            currentType = data.type;
-
             document.getElementById("d-cover").src = data.cover;
             document.getElementById("d-title").innerText = data.title;
             document.getElementById("d-stats").innerText = data.stats;
             document.getElementById("d-desc").innerText = data.desc;
-
             document.getElementById("d-author").innerText = data.author || "Unknown";
             document.getElementById("d-year").innerText = data.year || "N/A";
             document.getElementById("d-summary").innerText = data.summary || "";
 
-            document.getElementById("btn-save").onclick = function() {
-                saveBookmark(data.id, data.title, data.type, data.cover);
-                alert("Saved to bookmarks!");
+            // --- SMART BOOKMARK LOGIC ---
+            const btnSave = document.getElementById("btn-save");
+
+            function getBookmarks() {
+                return JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+            }
+
+            let bookmarks = getBookmarks();
+            let existingIndex = bookmarks.findIndex(b => b.id === data.id);
+            
+            if (existingIndex > -1) {
+                btnSave.src = "images/icons/icon_bookmark_red.png";
+            } else {
+                btnSave.src = "images/icons/icon_bookmark.png";
+            }
+
+            btnSave.onclick = function() {
+                let currentList = getBookmarks();
+                let index = currentList.findIndex(b => b.id === data.id);
+
+                if (index > -1) {
+                    currentList.splice(index, 1); 
+                    localStorage.setItem("khatoon_bookmarks", JSON.stringify(currentList));
+                    btnSave.src = "images/icons/icon_bookmark.png";
+                    showToast("You unmarked this story ❌");
+                } else {
+                    let newBook = {
+                        id: data.id,
+                        title: data.title,
+                        type: data.type,
+                        cover: data.cover
+                    };
+                    currentList.push(newBook);
+                    localStorage.setItem("khatoon_bookmarks", JSON.stringify(currentList));
+                    btnSave.src = "images/icons/icon_bookmark_red.png";
+                    showToast("You marked this story ✅");
+                }
             };
 
+            // --- EPISODE LIST LOGIC ---
             const listDiv = document.getElementById("ep-list");
             listDiv.innerHTML = ""; 
 
-            // --- SCENARIO A: STORY (Smart Language Switcher) ---
             if (data.type === "story") {
+                // 1. Show Buttons
                 document.querySelector(".section-title").innerText = "Select Language 🌐";
-                
                 let buttonsHTML = '<div class="read-btn-group" style="margin-bottom: 20px;">';
-                let firstLang = null; 
-
-                if (data.episodes_kh) {
-                    buttonsHTML += `<button class="read-btn btn-kh" onclick="showChapters('kh')">Khmer 🇰🇭</button>`;
-                    if (!firstLang) firstLang = 'kh';
-                }
-
-                if (data.episodes_en) {
-                    buttonsHTML += `<button class="read-btn btn-en" onclick="showChapters('en')">English 🇬🇧</button>`;
-                    if (!firstLang) firstLang = 'en';
-                }
-
+                if (data.episodes_kh) buttonsHTML += `<button class="read-btn btn-kh" onclick="showChapters('kh')">Khmer 🇰🇭</button>`;
+                if (data.episodes_en) buttonsHTML += `<button class="read-btn btn-en" onclick="showChapters('en')">English 🇬🇧</button>`;
                 buttonsHTML += '</div><div id="chapter-container"></div>';
                 listDiv.innerHTML = buttonsHTML;
-                
-                if (firstLang) {
-                    showChapters(firstLang);
-                } else {
-                    listDiv.innerHTML += "<div style='color:gray;'>No languages available.</div>";
+
+                // 2. AUTO-LOAD LOGIC (The Fix)
+                if (data.episodes_kh) {
+                    showChapters('kh'); // Auto-click Khmer
+                } else if (data.episodes_en) {
+                    showChapters('en'); // Auto-click English
                 }
 
-            } 
-            // --- SCENARIO B: COMIC / NOVEL (Updated for Intro) ---
-            else {
+            } else {
+                // ... (Novel/Comic Logic remains the same) ...
                 let sectionText = (data.type === "novel") ? "មាតិកា (Chapters)" : "ភាគទាំងអស់ (Episodes)";
                 document.querySelector(".section-title").innerText = sectionText;
-
-                let episodes = Object.keys(data.episodes);
-                // Sort Descending (5, 4, 3, 2, 1, 0)
-                episodes.sort((a, b) => b - a);
-
+                let episodes = Object.keys(data.episodes).sort((a, b) => b - a);
                 episodes.forEach(epNum => {
-                    // --- ✅ INTRO LOGIC ADDED HERE ---
-                    let label;
-                    
-                    if (epNum == '0') {
-                        label = "✨ Intro"; // Special Name for 0
-                    } else if (data.type === "novel") {
-                        label = "ជំពូកទី " + epNum;
-                    } else {
-                        label = "ភាគ " + epNum;
-                    }
-
+                    let label = (epNum == '0') ? "អារម្ភកថា" : ((data.type === "novel" ? "ជំពូកទី " : "ភាគ ") + epNum);
                     listDiv.innerHTML += `
                         <div class="chapter-item" onclick="location.href='read.html?id=${id}&ep=${epNum}${fromString}'">
                             <span>${label}</span>
@@ -136,41 +185,26 @@
                     `;
                 });
             }
-        } else {
-            document.getElementById("d-title").innerText = "Story Not Found";
         }
     }
 
-    // --- STORY CHAPTER LIST LOGIC ---
     function showChapters(lang) {
         const container = document.getElementById("chapter-container");
         const data = db[id];
         container.innerHTML = ""; 
-
         let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
-        let epKeys = Object.keys(episodes).sort((a,b) => b - a); 
-        
-        epKeys.forEach(epNum => {
-            // Check for Intro in Stories too
+        Object.keys(episodes).sort((a,b) => b - a).forEach(epNum => {
             let displayLabel = (epNum == '0') ? "✨ Intro" : ((lang === 'kh' ? 'ភាគ' : 'Episode') + " " + epNum);
-
             container.innerHTML += `
                 <div class="chapter-item" onclick="location.href='read.html?id=${id}&lang=${lang}&ep=${epNum}${fromString}'">
-                    <span>${displayLabel}</span>
-                    <span style="color:gray;">Read</span>
-                </div>
-            `;
+                    <span>${displayLabel}</span><span style="color:gray;">Read</span>
+                </div>`;
         });
     }
 
     function goUp() {
-        if (fromWhere === 'home') {
-            location.href = 'index.html';
-        } else if (currentType) {
-            location.href = `world.html?type=${currentType}`;
-        } else {
-            location.href = 'index.html';
-        }
+        if (fromWhere === 'home') location.href = 'index.html';
+        else location.href = 'index.html';
     }
 </script>
 </body>
