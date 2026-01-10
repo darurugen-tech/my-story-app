@@ -1,4 +1,4 @@
-/* style.css - COMPLETE (New Layout + Reader Support) */
+/* style.css - FINAL FIXED VERSION (Dark Header + Smart Search) */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;700&family=Kantumruy+Pro:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
 :root {
@@ -9,6 +9,7 @@
     --text-color: #ffffff;
     --sub-text: #aaaaaa;
     --search-color: rgba(82, 82, 82, 0.329);
+    --input-bg: #252525; /* Default Dark Input */
     --read-btn-color: rgba(0, 0, 0, 0.7);
     --btn-kh-color: rgba(0, 128, 0, 0.7);
     --btn-en-color: rgba(128, 0, 128, 0.7);
@@ -19,6 +20,7 @@ body.light-mode {
     --card-bg: #ffffff;
     --text-color: #121212;
     --sub-text: #555555;
+    --input-bg: #e0e0e0; /* Light Mode Input */
 }
 
 body {
@@ -41,19 +43,31 @@ body {
     box-sizing: border-box;
 }
 
-/* --- HEADER --- */
+/* --- HEADER (ALWAYS DARK) --- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background-color: var(--bg-color) !important;
+    /* FORCE DARK BACKGROUND ALWAYS */
+    background-color: #1a1a1a !important; 
     color: #ffffff !important;
     position: sticky;
     top: 0;
     z-index: 100;
     box-sizing: border-box;
     width: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Force Header Text/Icons to be White */
+.header .logo-text, 
+.header .logo-k,
+.header #r-title, 
+.header #page-title,
+.header .icon-label,
+.header div {
+    color: #ffffff !important;
 }
 
 .header-icons {
@@ -69,19 +83,30 @@ body {
     justify-content: center;
     cursor: pointer;
 }
-.icon-label { font-size: 10px; color: white; margin-top: 2px; }
+.icon-label { font-size: 10px; margin-top: 2px; }
 
 .icon-btn {
     width: 24px; height: 24px;
     object-fit: contain;
     filter: none !important; 
 }
-.icon-back-special { height: 26px !important; width: auto !important; }
+/* style.css */
 
-/* --- SEARCH (New Layout) --- */
+.icon-back-special {
+    width: 28px !important;    /* Same as height = Square */
+    height: 28px !important;   /* Same as width = Square */
+    
+    /* Remove the old wide settings */
+    min-width: auto !important; 
+    max-width: none !important;
+    
+    object-fit: contain !important;
+    display: block !important;
+}
+/* --- SEARCH (SMART COLOR) --- */
 .search-container {
     display: flex;
-    padding: 0 20px 20px 20px;
+    padding: 20px; /* Added padding top so it doesn't touch header */
     gap: 10px;
 }
 .search-container input {
@@ -89,21 +114,37 @@ body {
     padding: 12px 20px;
     border-radius: 50px;
     border: none;
-    background-color: #252525;
+    /* USE VARIABLE BACKGROUND */
+    background-color: var(--input-bg);
     color: var(--text-color);
     outline: none;
     font-size: 14px;
+    transition: background-color 0.3s;
 }
 .search-container button {
-    background-color: #252525;
+    background-color: var(--input-bg);
     border: none;
     border-radius: 50%;
     width: 42px;
     height: 42px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.3s;
 }
-.search-container button img { width: 20px; height: 20px; filter: invert(1); }
+/* Invert search icon color based on mode so it's visible */
+.search-container button img { 
+    width: 20px; height: 20px; 
+    filter: invert(1); 
+}
+body.light-mode .search-container button img {
+    filter: invert(0); /* Black icon in light mode */
+}
+
+/* --- LOGO --- */
+.app-logo {
+    width: auto; height: 40px; max-width: 120px;
+    object-fit: contain; display: block;
+}
 
 /* --- NEW SECTION CARDS --- */
 .section-card {
@@ -111,7 +152,7 @@ body {
     margin: 0 20px 25px 20px;
     padding: 20px;
     border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Lighter shadow for clean look */
 }
 
 .card-title {
@@ -204,169 +245,72 @@ body {
 .badge-new { background-color: #ff0000; }
 .badge-up  { background-color: #00E5FF; color: black; }
 
-/* --- DETAIL PAGE STYLES --- */
-.detail-header {
-    display: flex; padding: 20px; gap: 15px;
-    align-items: flex-start;
-}
-.detail-info { flex: 1; min-width: 0; }
-.chapter-item {
-    padding: 15px; border-bottom: 1px solid #333;
-    display: flex; justify-content: space-between;
-    font-size: 14px; cursor: pointer;
-}
-.read-btn-group { display: flex; gap: 15px; margin-top: 15px; }
-.read-btn {
-    background-color: var(--read-btn-color); color: white; border: none;
-    padding: 12px 24px; border-radius: 50px; font-size: 15px; font-weight: bold;
-    cursor: pointer; backdrop-filter: blur(5px);
-}
-.read-btn.btn-kh { background-color: var(--btn-kh-color) !important; }
-.read-btn.btn-en { background-color: var(--btn-en-color) !important; }
-
 /* --- DETAIL PAGE (NEW LAYOUT) --- */
-
-/* 1. Top Section (Cover + Info) */
 .detail-top-section {
-    display: flex;
-    padding: 20px;
-    gap: 20px;
-    align-items: flex-start;
+    display: flex; padding: 20px; gap: 20px; align-items: flex-start;
 }
-
 .detail-cover-img {
-    width: 130px; 
-    border-radius: 8px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    flex-shrink: 0;
+    width: 130px; border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); flex-shrink: 0;
 }
-
 .detail-info-box h2 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
-    font-family: 'Kantumruy Pro', sans-serif;
-    line-height: 1.3;
+    margin: 0 0 8px 0; font-size: 20px;
+    font-family: 'Kantumruy Pro', sans-serif; line-height: 1.3;
+    color: var(--text-color);
 }
-
 .detail-meta {
-    font-size: 13px;
-    color: #bbb;
-    line-height: 1.6;
-    margin-bottom: 8px;
+    font-size: 13px; color: var(--sub-text);
+    line-height: 1.6; margin-bottom: 8px;
 }
-
 .detail-desc-preview {
-    font-size: 12px;
-    color: #888;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 3; /* Limit to 3 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-style: italic;
+    font-size: 12px; color: var(--sub-text);
+    line-height: 1.4; display: -webkit-box;
+    -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden; font-style: italic;
 }
-
-/* 2. Warning Section */
 .warning-box {
-    margin: 0 20px 20px 20px;
-    padding: 15px 0;
-    border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
-    font-size: 11px;
-    color: #888;
-    line-height: 1.4;
+    margin: 0 20px 20px 20px; padding: 15px 0;
+    border-top: 1px solid #333; border-bottom: 1px solid #333;
+    font-size: 11px; color: #888; line-height: 1.4;
 }
-
-/* 3. Language Toggles */
 .lang-toggle-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
+    display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;
 }
-
 .lang-btn {
-    background-color: #333;
-    color: #888;
-    border: none;
-    padding: 10px 30px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
+    background-color: #333; color: #888; border: none;
+    padding: 10px 30px; border-radius: 8px; font-weight: bold;
+    cursor: pointer; font-size: 14px; transition: 0.2s;
 }
-
 .lang-btn.active {
-    background-color: #555; /* Active Grey */
-    color: white;
-    border: 1px solid #777;
+    background-color: #555; color: white; border: 1px solid #777;
 }
 
-/* 4. Chapter List Container */
+/* --- CHAPTER LIST --- */
 .chapter-section-title {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    font-family: 'Kantumruy Pro', sans-serif;
+    text-align: center; font-size: 18px; font-weight: bold;
+    margin-bottom: 15px; font-family: 'Kantumruy Pro', sans-serif;
+    color: var(--text-color);
 }
-
 .chapter-list-box {
-    background-color: #1a1a1a; /* Dark box background */
-    margin: 0 20px 40px 20px;
-    border-radius: 16px;
-    padding: 10px 0; /* Padding inside the box */
-    max-height: 320px; /* Height for approx 4-5 items */
-    overflow-y: auto;  /* Enable Scroll */
-    border: 1px solid #333;
+    background-color: #1a1a1a; margin: 0 20px 40px 20px;
+    border-radius: 16px; padding: 10px 0; max-height: 320px;
+    overflow-y: auto; border: 1px solid #333;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
-
-/* Custom Scrollbar for the list */
-.chapter-list-box::-webkit-scrollbar {
-    width: 6px;
-}
-.chapter-list-box::-webkit-scrollbar-thumb {
-    background-color: #444;
-    border-radius: 3px;
-}
-
 .chapter-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 18px 20px;
-    border-bottom: 1px solid #2a2a2a;
-    color: #ddd;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.1s;
-
-    /* ADD THIS LINE 👇 */
+    display: flex; justify-content: space-between; padding: 18px 20px;
+    border-bottom: 1px solid #2a2a2a; color: #ddd;
+    font-size: 14px; font-weight: bold; cursor: pointer;
     font-family: 'Noto Sans Khmer', sans-serif;
+    transition: background 0.1s;
 }
-
-.chapter-row:last-child {
-    border-bottom: none;
-}
-
-.chapter-row:active {
-    background-color: #333;
-}
-
-/* 5. Last Read Highlight */
+.chapter-row:active { background-color: #333; }
+.chapter-row:last-child { border-bottom: none; }
 .chapter-row.last-read {
-    background-color: rgba(0, 255, 0, 0.1); /* Green Transparent */
-    border-left: 4px solid #00E5FF;
-    color: #00E5FF;
+    background-color: rgba(0, 255, 0, 0.1);
+    border-left: 4px solid #00E5FF; color: #00E5FF;
 }
-
-.free-tag {
-    color: #666;
-    font-size: 10px;
-    font-weight: normal;
-}
+.free-tag { color: #666; font-size: 10px; font-weight: normal; }
 
 /* --- BOOKMARK DRAWER --- */
 .bookmark-overlay {
@@ -405,13 +349,10 @@ body {
 
 /* --- FOOTER --- */
 .footer {
-    text-align: center;
-    padding: 30px;
-    font-size: 12px;
-    color: #666;
+    text-align: center; padding: 30px; font-size: 12px; color: #666;
 }
 
-/* --- READER VIEW (CRITICAL) --- */
+/* --- READER VIEW --- */
 .read-page-header, .read-page-footer {
     position: fixed; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px; z-index: 1000;
@@ -437,7 +378,6 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     box-sizing: border-box; overflow-x: hidden;
     padding-top: 80px; padding-bottom: 150px !important; 
 }
-
 .read-container.image-mode {
     padding-left: 0; padding-right: 0;
     background-color: #ffffff !important; 
@@ -451,7 +391,7 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
 }
 .read-container.text-mode p {
     font-family: 'Noto Sans Khmer', sans-serif; 
-    font-weight: 400; font-size: 24px; line-height: 2.0; 
+    font-weight: 400; font-size: 22px; line-height: 2.0; 
     margin-top: 0; margin-bottom: 30px; 
     color: inherit; word-wrap: break-word;
 }
@@ -486,70 +426,33 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     cursor: pointer; margin-top: 15px; width: 100%;
 }
 
-/* Add this to style.css to fix the logo size */
-.app-logo {
-    width: auto;       /* Allow width to adjust based on height */
-    height: 40px;      /* Set a fixed height */
-    max-width: 120px;  /* Prevent it from getting too wide */
-    object-fit: contain;
-    display: block;
-}
-
-/* --- GLOBAL DROPDOWNS (Added for Khmer Font) --- */
-select, option {
-    font-family: 'Noto Sans Khmer', sans-serif !important;
-}
-
-/* Center text in the Episode Dropdown */
+/* --- CUSTOM SELECT DROPDOWN --- */
 #ep-select {
-    text-align: center;
-    text-align-last: center; /* Required for Chrome/Safari */
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    width: auto; min-width: 140px; max-width: 220px;
+    padding: 6px 35px 6px 15px; border-radius: 50px;
     font-family: 'Noto Sans Khmer', sans-serif !important;
-}
-
-/* Optional: Center the options inside the list (Works in some browsers) */
-#ep-select option {
-    text-align: center;
-}
-
-/* --- CUSTOM SELECT DROPDOWN STYLE --- */
-#ep-select {
-    /* 1. Remove default browser ugly box */
-    appearance: none; 
-    -webkit-appearance: none; 
-    -moz-appearance: none;
-
-    /* 2. Custom Size & Shape */
-    width: auto;
-    min-width: 140px;      /* Ensure it's not too small */
-    max-width: 220px;      /* Ensure it's not too big */
-    padding: 6px 35px 6px 15px; /* Right padding is for the arrow */
-    border-radius: 50px;   /* Pill shape */
-    
-    /* 3. Font & Colors */
-    font-family: 'Noto Sans Khmer', sans-serif !important;
-    font-size: 14px;       /* Smaller, cleaner font */
-    background-color: #333; /* Dark Grey Background */
-    color: white;          /* White Text */
-    border: 1px solid #555;
-    
-    /* 4. Center Text */
-    text-align: center;
-    text-align-last: center;
-    cursor: pointer;
-    outline: none;
-
-    /* 5. Custom White Arrow Icon */
+    font-size: 14px; background-color: #333; color: white;
+    border: 1px solid #555; text-align: center;
+    text-align-last: center; cursor: pointer; outline: none;
     background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
+    background-repeat: no-repeat; background-position: right 12px center;
     background-size: 10px auto;
 }
-
-/* Style the Dropdown List Options (Works on Chrome/Edge/Android) */
 #ep-select option {
-    background-color: #222; /* Dark background for the list */
-    color: white;           /* White text */
-    padding: 10px;
-    font-size: 14px;
+    background-color: #222; color: white;
+    padding: 10px; font-size: 14px;
+    font-family: 'Noto Sans Khmer', sans-serif !important;
+}
+
+/* --- READER HEADER CENTER ALIGNMENT --- */
+.reader-header-content {
+    flex: 1;               /* Takes up all middle space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* Horizontally centers title */
+    justify-content: center; /* Vertically centers title */
+    z-index: 10;
+    width: 100%;
+    gap: 5px;             /* Space between title and dropdown */
 }
