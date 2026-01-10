@@ -12,65 +12,67 @@
     
     <div class="header">
         <div class="header-logo-group" style="display: flex; align-items: center; gap: 10px;">
-            <img src="images/icons/icon_logo.png" class="app-logo" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-            <div class="logo-text"><span class="logo-k">K</span>haTOON</div>
+            <img src="images/icons/icon_logo.png" class="app-logo" alt="Logo">
         </div>
+        
         <div class="header-icons">
             <div class="icon-box" onclick="toggleTheme()">
-                <img id="theme-icon" src="images/icons/icon_sun.png" class="icon-btn" alt="Theme">
-                <span id="theme-text" class="icon-label" style="font-size: 10px;">Light</span>
+                <img id="theme-icon" src="images/icons/icon_sun.png" class="icon-btn" style="width:20px; height:20px;">
+                <span id="theme-text" class="icon-label">Light</span>
             </div>
-            <div class="icon-box" onclick="openBookmarks()">
-                <img src="images/icons/icon_bookmark.png" class="icon-btn" alt="Bookmarks">
-                <span class="icon-label" style="font-size: 10px;">Saved</span>
+            
+            <div class="icon-box" onclick="toggleBookmarks()">
+                <img id="btn-library" src="images/icons/icon_library.png" class="icon-btn" style="width:20px; height:20px;">
+                <span class="icon-label">Library</span>
             </div>
         </div>
     </div>
 
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search stories..." onkeyup="handleSearch(event)">
-        <button onclick="performSearch()">🔍</button>
+        <button onclick="performSearch()">
+            <img src="images/icons/icon_search.png" alt="Search">
+        </button>
     </div>
 
-    <div class="section-title">Story World </div>
-    <a href="world.html?type=story" class="banner-wrapper">
-        <img src="images/covers/banner_story.jpg" class="banner">
-        <div class="banner-label">Story World <i class="css-arrow"></i></div>
-    </a>
-    
-    <div id="list-story" class="scroll-container"></div>
+    <div class="section-card">
+        <div class="card-title">● Story world</div>
+        <div id="list-story" class="scroll-container"></div>
+        <a href="world.html?type=story" class="show-more-btn">បង្ហាញច្រើនទៀត</a>
+    </div>
 
+    <div class="ad-banner-wrapper">
+        <img src="images/covers/banner_story.jpg" class="ad-banner" alt="Ad 1">
+    </div>
 
-    <div class="section-title">Novel World </div>
-    <a href="world.html?type=novel" class="banner-wrapper">
-        <img src="images/covers/banner_novel.jpg" class="banner">
-        <div class="banner-label">Novel World <i class="css-arrow"></i></div>
-    </a>
+    <div class="section-card">
+        <div class="card-title">● Novel world</div>
+        <div id="list-novel" class="scroll-container"></div>
+        <a href="world.html?type=novel" class="show-more-btn">បង្ហាញច្រើនទៀត</a>
+    </div>
 
-    <div id="list-novel" class="scroll-container"></div>
+    <div class="ad-banner-wrapper">
+        <img src="images/covers/banner_novel.jpg" class="ad-banner" alt="Ad 2">
+    </div>
 
+    <div class="section-card">
+        <div class="card-title">● Comic world</div>
+        <div id="list-comic" class="scroll-container"></div>
+        <a href="world.html?type=comic" class="show-more-btn">បង្ហាញច្រើនទៀត</a>
+    </div>
 
-    <div class="section-title">Comic World </div>
-    <a href="world.html?type=comic" class="banner-wrapper">
-        <img src="images/covers/banner_comic.jpg" class="banner">
-        <div class="banner-label">Comic World <i class="css-arrow"></i></div>
-    </a>
-    
-    <div id="list-comic" class="scroll-container"></div>
 
     <div class="footer">
-        © 2025 KhaToon. All Rights Reserved.
+        © 2026 AAN. All Rights Reserved.
     </div>
 
     <div id="bookmark-overlay" class="bookmark-overlay" onclick="toggleBookmarks()"></div>
     <div id="bookmark-drawer" class="bookmark-drawer">
         <div class="drawer-header">
-            <h3>My Bookmarks </h3>
-            <span onclick="toggleBookmarks()" style="cursor:pointer; font-size:20px;">✖</span>
+            <span>My Library</span>
+            <span onclick="toggleBookmarks()" style="cursor:pointer;">✕</span>
         </div>
-        <div id="bookmark-list">
-            <div style="text-align:center; padding:20px; color:#666;">No bookmarks yet!</div>
-        </div>
+        <div id="bookmark-list"></div>
     </div>
 
 </div>
@@ -79,8 +81,33 @@
 <script src="app.js"></script>
 
 <script>
-    // --- AUTOMATIC HOME PAGE LOADER (Fixed Badges) ---
-    
+    // --- 1. THEME TOGGLE LOGIC ---
+    const themeIcon = document.getElementById("theme-icon");
+    const themeText = document.getElementById("theme-text");
+
+    function updateThemeUI(isLight) {
+        if (isLight) {
+            document.body.classList.add("light-mode");
+            if(themeIcon) themeIcon.src = "images/icons/icon_moon.png"; 
+            if(themeText) themeText.innerText = "Dark"; 
+        } else {
+            document.body.classList.remove("light-mode");
+            if(themeIcon) themeIcon.src = "images/icons/icon_sun.png"; 
+            if(themeText) themeText.innerText = "Light";
+        }
+    }
+
+    const savedTheme = localStorage.getItem("theme");
+    updateThemeUI(savedTheme === "light");
+
+    function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+        const isLight = document.body.classList.contains("light-mode");
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+        updateThemeUI(isLight);
+    }
+
+    // --- 2. AUTOMATIC STORY LOADER ---
     const storyList = document.getElementById("list-story");
     const novelList = document.getElementById("list-novel");
     const comicList = document.getElementById("list-comic");
@@ -88,35 +115,89 @@
     for (let key in db) {
         let item = db[key];
         
-        // 1. CHECK FOR BADGE
-        let badgeHTML = "";
-        if (item.badge) {
-            // Check if it is "NEW" or "UP" to give it the right color
-            let badgeClass = (item.badge === "NEW") ? "badge-new" : "badge-up";
-            badgeHTML = `<span class="badge ${badgeClass}">${item.badge}</span>`;
-        }
+        if (item.released === false) { continue; } 
 
-        // 2. CREATE CARD (Now includes ${badgeHTML})
+        let badgeHTML = item.badge ? `<span class="badge ${item.badge === "NEW" ? "badge-new" : "badge-up"}">${item.badge}</span>` : "";
+
         let cardHTML = `
             <div class="story-card" onclick="location.href='view.html?id=${item.id}&from=home'">
-                ${badgeHTML} 
-                <img src="${item.cover}" class="story-cover">
+                <div style="position:relative;">
+                    ${badgeHTML} 
+                    <img src="${item.cover}" class="story-cover">
+                </div>
                 <div class="story-title">${item.title}</div>
                 <div class="story-stats">${item.stats}</div>
             </div>
         `;
 
-        // 3. ADD TO LIST
-        if (item.type === 'story') {
-            storyList.innerHTML += cardHTML;
-        } else if (item.type === 'novel') {
-            novelList.innerHTML += cardHTML;
-        } else if (item.type === 'comic') {
-            comicList.innerHTML += cardHTML;
-        }
+        if (item.type === 'story' && storyList) storyList.innerHTML += cardHTML;
+        else if (item.type === 'novel' && novelList) novelList.innerHTML += cardHTML;
+        else if (item.type === 'comic' && comicList) comicList.innerHTML += cardHTML;
     }
 
     enableDragScroll();
+
+    // --- 3. BOOKMARK DRAWER LOGIC ---
+    function toggleBookmarks() {
+        const overlay = document.getElementById("bookmark-overlay");
+        const drawer = document.getElementById("bookmark-drawer");
+        const list = document.getElementById("bookmark-list");
+
+        overlay.classList.toggle("active");
+        drawer.classList.toggle("active");
+
+        if (drawer.classList.contains("active")) {
+            const bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+            list.innerHTML = ""; 
+
+            if (bookmarks.length === 0) {
+                list.innerHTML = "<p style='color:gray; text-align:center;'>No saved stories yet.</p>";
+            } else {
+                bookmarks.forEach((book, index) => {
+                    list.innerHTML += `
+                        <div class="bookmark-item">
+                            <img src="${book.cover}" onclick="location.href='view.html?id=${book.id}'">
+                            <div class="bookmark-info" onclick="location.href='view.html?id=${book.id}'">
+                                <div style="font-weight:bold; font-size:14px; color:white;">${book.title}</div>
+                                <div style="font-size:10px; color:gray;">${book.type.toUpperCase()}</div>
+                            </div>
+                            <button class="btn-remove" onclick="removeBookmark(${index})">
+                                <img src="images/icons/icon_trash.png" alt="Delete">
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+        }
+    }
+
+    function removeBookmark(index) {
+        let bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+        bookmarks.splice(index, 1);
+        localStorage.setItem("khatoon_bookmarks", JSON.stringify(bookmarks));
+        
+        // Refresh the list immediately without closing
+        const list = document.getElementById("bookmark-list");
+        list.innerHTML = "";
+        if (bookmarks.length === 0) {
+            list.innerHTML = "<p style='color:gray; text-align:center;'>No saved stories yet.</p>";
+        } else {
+            bookmarks.forEach((book, idx) => {
+                list.innerHTML += `
+                    <div class="bookmark-item">
+                        <img src="${book.cover}" onclick="location.href='view.html?id=${book.id}'">
+                        <div class="bookmark-info" onclick="location.href='view.html?id=${book.id}'">
+                            <div style="font-weight:bold; font-size:14px; color:white;">${book.title}</div>
+                            <div style="font-size:10px; color:gray;">${book.type.toUpperCase()}</div>
+                        </div>
+                        <button class="btn-remove" onclick="removeBookmark(${idx})">
+                            <img src="images/icons/icon_trash.png" alt="Delete">
+                        </button>
+                    </div>
+                `;
+            });
+        }
+    }
 </script>
 
 </body>

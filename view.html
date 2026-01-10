@@ -3,45 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail</title>
+    <title>Detail View</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app-container">
 
     <div class="header">
-        <div onclick="goUp()" style="cursor: pointer;">
+        <div onclick="history.back()" style="cursor: pointer;">
             <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
         </div>
-        <img id="btn-save" src="images/icons/icon_bookmark.png" class="icon-btn" alt="Save">
-    </div>
 
-    <div class="detail-header" style="display: flex; align-items: flex-start; gap: 15px; padding: 20px;">
-        
-        <img id="d-cover" src="" style="width: 125px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-
-        <div class="detail-info" style="flex: 1;">
-            <h2 id="d-title" style="margin: 0 0 5px 0; font-size: 22px; color: var(--text-color);">Loading...</h2>
-            <div id="d-stats" style="font-size: 14px; color: gray; margin-bottom: 12px;"></div>
-
-            <div class="meta-data" style="font-size: 14px; line-height: 1.6; color: var(--text-color);">
-                <p style="margin: 0;"><strong>Writer:</strong> <span id="d-author" style="color: var(--sub-text);"></span></p>
-                <p style="margin: 0;"><strong>Year:</strong> <span id="d-year"></span></p>
+        <div class="header-icons">
+            <div class="icon-box" onclick="toggleThemeLocal()">
+                <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn">
+                <span id="theme-text" class="icon-label">Light</span>
             </div>
-
-            <p id="d-summary" style="margin-top: 10px; font-size: 13px; font-style: italic; color: var(--sub-text); line-height: 1.4;"></p>
+            <div class="icon-box">
+                <img id="btn-save" src="images/icons/icon_bookmark.png" class="icon-btn">
+                <span class="icon-label">Saved</span>
+            </div>
         </div>
     </div>
 
-    <div style="padding: 0 20px;">
-        <p id="d-desc" style="font-size: 14px; color: var(--text-color); line-height: 1.5; border-top: 1px solid #333; padding-top: 15px;"></p>
+    <div class="detail-top-section">
+        <img id="d-cover" src="" class="detail-cover-img">
+        
+        <div class="detail-info-box">
+            <h2 id="d-title">Loading...</h2>
+            <div id="d-stats" class="detail-meta" style="color:#aaa;"></div>
+            
+            <div class="detail-meta">
+                <span style="color:white; font-weight:bold;">Writer:</span> <span id="d-author"></span><br>
+                <span style="color:white; font-weight:bold;">Year:</span> <span id="d-year"></span>
+            </div>
+
+            <div id="d-desc" class="detail-desc-preview"></div>
+        </div>
     </div>
 
-    <hr style="border: none; border-bottom: 1px solid #222; margin: 20px;">
+    <div id="warning-container" class="warning-box" style="display:none;">
+        <span id="d-warning"></span>
+    </div>
+
+    <div id="lang-container" class="lang-toggle-container" style="display:none;">
+        <button id="btn-kh" class="lang-btn active" onclick="switchLang('kh')">Khmer</button>
+        <button id="btn-en" class="lang-btn" onclick="switchLang('en')">English</button>
+    </div>
+
+    <div class="chapter-section-title">មាតិកា (Chapter)</div>
     
-    <div class="section-title">Episodes</div>
-    
-    <div id="ep-list" style="padding-bottom: 40px;"></div>
+    <div class="chapter-list-box" id="chapter-list">
+        </div>
+
+    <div class="footer">
+        © 2026 AAN. All Rights Reserved.
+    </div>
+
+    <div id="toast-notification">Notification</div>
 
 </div>
 
@@ -49,128 +68,187 @@
 <script src="app.js"></script> 
 
 <script>
+    // --- 1. THEME LOGIC ---
+    const themeBtn = document.getElementById("theme-btn");
+    const themeText = document.getElementById("theme-text");
+
+    function updateThemeUI(isLight) {
+        if (isLight) {
+            document.body.classList.add("light-mode");
+            if(themeBtn) themeBtn.src = "images/icons/icon_moon.png";
+            if(themeText) themeText.innerText = "Dark";
+        } else {
+            document.body.classList.remove("light-mode");
+            if(themeBtn) themeBtn.src = "images/icons/icon_sun.png";
+            if(themeText) themeText.innerText = "Light";
+        }
+    }
+    const savedTheme = localStorage.getItem("theme");
+    updateThemeUI(savedTheme === "light");
+
+    function toggleThemeLocal() {
+        document.body.classList.toggle("light-mode");
+        const isLight = document.body.classList.contains("light-mode");
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+        updateThemeUI(isLight);
+    }
+
+    // --- 2. LOAD DATA ---
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    const fromWhere = params.get('from'); 
-    const fromString = fromWhere ? `&from=${fromWhere}` : "";
-    let currentType = "";
+    
+    // Store current active language ('kh' or 'en')
+    let currentLang = 'kh'; 
+    let data = null;
 
-    if (typeof db === 'undefined') {
-        alert("Error: stories.js is not loaded!");
-    } else {
-        const data = db[id];
-
+    if (typeof db !== 'undefined') {
+        data = db[id];
         if (data) {
-            currentType = data.type;
-
+            // A. Populate Basic Info
             document.getElementById("d-cover").src = data.cover;
             document.getElementById("d-title").innerText = data.title;
             document.getElementById("d-stats").innerText = data.stats;
-            document.getElementById("d-desc").innerText = data.desc;
-
             document.getElementById("d-author").innerText = data.author || "Unknown";
             document.getElementById("d-year").innerText = data.year || "N/A";
-            document.getElementById("d-summary").innerText = data.summary || "";
+            document.getElementById("d-desc").innerText = data.desc;
 
-            document.getElementById("btn-save").onclick = function() {
-                saveBookmark(data.id, data.title, data.type, data.cover);
-                alert("Saved to bookmarks!");
-            };
-
-            const listDiv = document.getElementById("ep-list");
-            listDiv.innerHTML = ""; 
-
-            // --- SCENARIO A: STORY (Smart Language Switcher) ---
-            if (data.type === "story") {
-                document.querySelector(".section-title").innerText = "Select Language 🌐";
-                
-                let buttonsHTML = '<div class="read-btn-group" style="margin-bottom: 20px;">';
-                let firstLang = null; 
-
-                if (data.episodes_kh) {
-                    buttonsHTML += `<button class="read-btn btn-kh" onclick="showChapters('kh')">Khmer 🇰🇭</button>`;
-                    if (!firstLang) firstLang = 'kh';
-                }
-
-                if (data.episodes_en) {
-                    buttonsHTML += `<button class="read-btn btn-en" onclick="showChapters('en')">English 🇬🇧</button>`;
-                    if (!firstLang) firstLang = 'en';
-                }
-
-                buttonsHTML += '</div><div id="chapter-container"></div>';
-                listDiv.innerHTML = buttonsHTML;
-                
-                if (firstLang) {
-                    showChapters(firstLang);
-                } else {
-                    listDiv.innerHTML += "<div style='color:gray;'>No languages available.</div>";
-                }
-
-            } 
-            // --- SCENARIO B: COMIC / NOVEL (Updated for Intro) ---
-            else {
-                let sectionText = (data.type === "novel") ? "មាតិកា (Chapters)" : "ភាគទាំងអស់ (Episodes)";
-                document.querySelector(".section-title").innerText = sectionText;
-
-                let episodes = Object.keys(data.episodes);
-                // Sort Descending (5, 4, 3, 2, 1, 0)
-                episodes.sort((a, b) => b - a);
-
-                episodes.forEach(epNum => {
-                    // --- ✅ INTRO LOGIC ADDED HERE ---
-                    let label;
-                    
-                    if (epNum == '0') {
-                        label = "✨ Intro"; // Special Name for 0
-                    } else if (data.type === "novel") {
-                        label = "ជំពូកទី " + epNum;
-                    } else {
-                        label = "ភាគ " + epNum;
-                    }
-
-                    listDiv.innerHTML += `
-                        <div class="chapter-item" onclick="location.href='read.html?id=${id}&ep=${epNum}${fromString}'">
-                            <span>${label}</span>
-                            <span style="color:gray;">FREE</span>
-                        </div>
-                    `;
-                });
+            // B. Warning Logic
+            if (data.warning && data.warning.trim() !== "") {
+                document.getElementById("warning-container").style.display = "block";
+                document.getElementById("d-warning").innerText = data.warning;
             }
-        } else {
-            document.getElementById("d-title").innerText = "Story Not Found";
+
+            // C. Language Logic
+            // Check availability
+            const hasKh = !!data.episodes_kh || (data.type !== 'story' && data.episodes); // Non-story types usually store in 'episodes'
+            const hasEn = !!data.episodes_en;
+
+            const langContainer = document.getElementById("lang-container");
+
+            if (data.type === 'story') {
+                if (hasKh && hasEn) {
+                    langContainer.style.display = "flex"; // Show Toggle
+                    switchLang('kh'); // Default to Khmer
+                } else if (hasEn) {
+                    langContainer.style.display = "none";
+                    currentLang = 'en';
+                    renderChapters(data.episodes_en, 'en');
+                } else {
+                    langContainer.style.display = "none";
+                    currentLang = 'kh';
+                    renderChapters(data.episodes_kh, 'kh');
+                }
+            } else {
+                // For Novels/Comics (usually single language structure in your DB)
+                langContainer.style.display = "none";
+                renderChapters(data.episodes, 'default');
+            }
+
+            // D. Bookmark Logic (Same as before)
+            setupBookmarkButton(data);
         }
     }
 
-    // --- STORY CHAPTER LIST LOGIC ---
-    function showChapters(lang) {
-        const container = document.getElementById("chapter-container");
-        const data = db[id];
-        container.innerHTML = ""; 
-
-        let episodes = (lang === 'kh') ? data.episodes_kh : data.episodes_en;
-        let epKeys = Object.keys(episodes).sort((a,b) => b - a); 
+    // --- 3. SWITCH LANGUAGE FUNCTION ---
+    function switchLang(lang) {
+        currentLang = lang;
         
-        epKeys.forEach(epNum => {
-            // Check for Intro in Stories too
-            let displayLabel = (epNum == '0') ? "✨ Intro" : ((lang === 'kh' ? 'ភាគ' : 'Episode') + " " + epNum);
+        // Update Buttons UI
+        document.getElementById('btn-kh').className = (lang === 'kh') ? 'lang-btn active' : 'lang-btn';
+        document.getElementById('btn-en').className = (lang === 'en') ? 'lang-btn active' : 'lang-btn';
 
-            container.innerHTML += `
-                <div class="chapter-item" onclick="location.href='read.html?id=${id}&lang=${lang}&ep=${epNum}${fromString}'">
-                    <span>${displayLabel}</span>
-                    <span style="color:gray;">Read</span>
-                </div>
+        // Render List
+        if (lang === 'kh') renderChapters(data.episodes_kh, 'kh');
+        else renderChapters(data.episodes_en, 'en');
+    }
+
+    // --- 4. RENDER CHAPTERS (Scrollable Box) ---
+    function renderChapters(episodesData, langCode) {
+        const listDiv = document.getElementById("chapter-list");
+        listDiv.innerHTML = ""; // Clear existing
+
+        if (!episodesData) {
+            listDiv.innerHTML = "<div style='padding:20px; text-align:center; color:#666;'>No chapters available.</div>";
+            return;
+        }
+
+        // Get keys and Sort Descending (Newest first)
+        // Note: '0' (Intro) should usually be at bottom or top? User said "Last one is on the top". 
+        // Assuming keys are "1", "2", "3". Sort b - a.
+        let keys = Object.keys(episodesData).sort((a, b) => b - a);
+
+        // Get Last Read from LocalStorage
+        // Key format: "last_read_storyId" -> returns epNum
+        const lastReadEp = localStorage.getItem('last_read_' + id);
+
+        keys.forEach(epNum => {
+            let label = "";
+            if (epNum == '0') label = "Intro / Prologue";
+            else label = (data.type === "novel" ? "Chapter " : "Episode ") + epNum;
+            
+            // Add custom Khmer label if needed
+            if (langCode === 'kh' || (langCode === 'default' && data.type === 'novel')) {
+                 if (epNum == '0') label = "អារម្ភកថា";
+                 else label = (data.type === "novel" ? "ជំពូកទី " : "ភាគ ") + epNum;
+            }
+
+            // Check if this is the last read one
+            let activeClass = (lastReadEp == epNum) ? " last-read" : "";
+
+            // Create HTML
+            let row = document.createElement("div");
+            row.className = "chapter-row" + activeClass;
+            row.innerHTML = `
+                <span>${label}</span>
+                <span class="free-tag">FREE</span>
             `;
+            
+            // On Click -> Go to Read
+            row.onclick = function() {
+                // Save this as last read
+                localStorage.setItem('last_read_' + id, epNum);
+                
+                // Navigate
+                let url = `read.html?id=${id}&ep=${epNum}`;
+                if (langCode !== 'default') url += `&lang=${langCode}`;
+                location.href = url;
+            };
+
+            listDiv.appendChild(row);
         });
     }
 
-    function goUp() {
-        if (fromWhere === 'home') {
-            location.href = 'index.html';
-        } else if (currentType) {
-            location.href = `world.html?type=${currentType}`;
-        } else {
-            location.href = 'index.html';
-        }
+    // --- 5. BOOKMARK SETUP ---
+    function setupBookmarkButton(item) {
+        const btnSave = document.getElementById("btn-save");
+        let bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+        
+        // Check initial state
+        let isSaved = bookmarks.some(b => b.id === item.id);
+        btnSave.src = isSaved ? "images/icons/icon_bookmark_red.png" : "images/icons/icon_bookmark.png";
+
+        btnSave.onclick = function() {
+            bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+            let index = bookmarks.findIndex(b => b.id === item.id);
+
+            if (index > -1) {
+                bookmarks.splice(index, 1);
+                btnSave.src = "images/icons/icon_bookmark.png";
+                showToast("Removed from Library");
+            } else {
+                bookmarks.push({ id: item.id, title: item.title, type: item.type, cover: item.cover });
+                btnSave.src = "images/icons/icon_bookmark_red.png";
+                showToast("Saved to Library");
+            }
+            localStorage.setItem("khatoon_bookmarks", JSON.stringify(bookmarks));
+        };
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById("toast-notification");
+        t.innerText = msg;
+        t.className = "show";
+        setTimeout(() => t.className = t.className.replace("show", ""), 3000);
     }
 </script>
 </body>
