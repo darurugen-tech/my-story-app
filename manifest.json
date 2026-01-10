@@ -1,7 +1,7 @@
 {
   "name": "AAN Reader",
   "short_name": "AAN",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -9,6 +9,11 @@
     {
       "src": "images/icons/app_icon.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/app_icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
