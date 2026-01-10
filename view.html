@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AAN Reader">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail View</title>
@@ -179,7 +186,8 @@
 
             // Check Highlight
             let activeClass = (lastReadEp == epNum) ? " last-read" : "";
-            let resumeText = (lastReadEp == epNum) ? '<span style="font-size:10px; color:#00E5FF; margin-left:5px;">(RESUME)</span>' : '';
+            // Uses the new "resume-text" class defined in CSS
+let resumeText = (lastReadEp == epNum) ? '<span class="resume-text">(RESUME)</span>' : '';
 
             // GENERATE LINK (Direct URL for reliability)
             let targetUrl = `read.html?id=${id}&ep=${epNum}`;

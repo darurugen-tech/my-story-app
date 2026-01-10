@@ -1,4 +1,4 @@
-/* style.css - FINAL FIXED VERSION (Dark Header + Smart Search) */
+/* style.css - FINAL FIXED VERSION */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;700&family=Kantumruy+Pro:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
 :root {
@@ -9,7 +9,7 @@
     --text-color: #ffffff;
     --sub-text: #aaaaaa;
     --search-color: rgba(82, 82, 82, 0.329);
-    --input-bg: #252525; /* Default Dark Input */
+    --input-bg: #252525;
     --read-btn-color: rgba(0, 0, 0, 0.7);
     --btn-kh-color: rgba(0, 128, 0, 0.7);
     --btn-en-color: rgba(128, 0, 128, 0.7);
@@ -20,7 +20,7 @@ body.light-mode {
     --card-bg: #ffffff;
     --text-color: #121212;
     --sub-text: #555555;
-    --input-bg: #e0e0e0; /* Light Mode Input */
+    --input-bg: #e0e0e0;
 }
 
 body {
@@ -49,7 +49,6 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    /* FORCE DARK BACKGROUND ALWAYS */
     background-color: #1a1a1a !important; 
     color: #ffffff !important;
     position: sticky;
@@ -60,7 +59,6 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-/* Force Header Text/Icons to be White */
 .header .logo-text, 
 .header .logo-k,
 .header #r-title, 
@@ -90,23 +88,21 @@ body {
     object-fit: contain;
     filter: none !important; 
 }
-/* style.css */
 
+/* --- SQUARE BACK BUTTON --- */
 .icon-back-special {
-    width: 28px !important;    /* Same as height = Square */
-    height: 28px !important;   /* Same as width = Square */
-    
-    /* Remove the old wide settings */
+    width: 28px !important;
+    height: 28px !important;
     min-width: auto !important; 
     max-width: none !important;
-    
     object-fit: contain !important;
     display: block !important;
 }
+
 /* --- SEARCH (SMART COLOR) --- */
 .search-container {
     display: flex;
-    padding: 20px; /* Added padding top so it doesn't touch header */
+    padding: 20px;
     gap: 10px;
 }
 .search-container input {
@@ -114,7 +110,6 @@ body {
     padding: 12px 20px;
     border-radius: 50px;
     border: none;
-    /* USE VARIABLE BACKGROUND */
     background-color: var(--input-bg);
     color: var(--text-color);
     outline: none;
@@ -131,13 +126,12 @@ body {
     display: flex; align-items: center; justify-content: center;
     transition: background-color 0.3s;
 }
-/* Invert search icon color based on mode so it's visible */
 .search-container button img { 
     width: 20px; height: 20px; 
     filter: invert(1); 
 }
 body.light-mode .search-container button img {
-    filter: invert(0); /* Black icon in light mode */
+    filter: invert(0);
 }
 
 /* --- LOGO --- */
@@ -152,7 +146,7 @@ body.light-mode .search-container button img {
     margin: 0 20px 25px 20px;
     padding: 20px;
     border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Lighter shadow for clean look */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .card-title {
@@ -245,7 +239,7 @@ body.light-mode .search-container button img {
 .badge-new { background-color: #ff0000; }
 .badge-up  { background-color: #00E5FF; color: black; }
 
-/* --- DETAIL PAGE (NEW LAYOUT) --- */
+/* --- DETAIL PAGE --- */
 .detail-top-section {
     display: flex; padding: 20px; gap: 20px; align-items: flex-start;
 }
@@ -285,32 +279,107 @@ body.light-mode .search-container button img {
     background-color: #555; color: white; border: 1px solid #777;
 }
 
-/* --- CHAPTER LIST --- */
+/* --- CHAPTER LIST (SMART THEME SUPPORT) --- */
+
 .chapter-section-title {
-    text-align: center; font-size: 18px; font-weight: bold;
-    margin-bottom: 15px; font-family: 'Kantumruy Pro', sans-serif;
-    color: var(--text-color);
+    text-align: center; 
+    font-size: 18px; 
+    font-weight: bold;
+    margin-bottom: 15px; 
+    font-family: 'Kantumruy Pro', sans-serif;
+    color: var(--text-color); /* Automatically changes Black/White */
 }
+
 .chapter-list-box {
-    background-color: #1a1a1a; margin: 0 20px 40px 20px;
-    border-radius: 16px; padding: 10px 0; max-height: 320px;
-    overflow-y: auto; border: 1px solid #333;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    /* Default (Dark Mode) */
+    background-color: #242424; 
+    margin: 0 20px 40px 20px;
+    border-radius: 16px; 
+    padding: 10px 0; 
+    max-height: 320px;
+    overflow-y: auto; 
+    border: 1px solid #333;
+    transition: background-color 0.3s, border-color 0.3s;
 }
+
+/* LIGHT MODE OVERRIDE (The Fix) */
+body.light-mode .chapter-list-box {
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e0e0e0; /* Light border */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
 .chapter-row {
-    display: flex; justify-content: space-between; padding: 18px 20px;
-    border-bottom: 1px solid #2a2a2a; color: #ddd;
-    font-size: 14px; font-weight: bold; cursor: pointer;
+    display: flex; 
+    justify-content: space-between; 
+    padding: 18px 20px;
+    border-bottom: 1px solid #333; /* Dark separator */
+    color: #ddd;                   /* Light Text for Dark Mode */
+    font-size: 14px; 
+    font-weight: bold; 
+    cursor: pointer;
     font-family: 'Noto Sans Khmer', sans-serif;
     transition: background 0.1s;
 }
-.chapter-row:active { background-color: #333; }
-.chapter-row:last-child { border-bottom: none; }
-.chapter-row.last-read {
-    background-color: rgba(0, 255, 0, 0.1);
-    border-left: 4px solid #00E5FF; color: #00E5FF;
+
+/* LIGHT MODE TEXT & SEPARATORS */
+body.light-mode .chapter-row {
+    color: #333333;               /* Dark Text for Light Mode */
+    border-bottom: 1px solid #f0f0f0; /* Light separator */
 }
-.free-tag { color: #666; font-size: 10px; font-weight: normal; }
+
+.chapter-row:active { 
+    background-color: #333; 
+}
+
+/* Light Mode Active State */
+body.light-mode .chapter-row:active {
+    background-color: #f5f5f5; 
+}
+
+.chapter-row:last-child { 
+    border-bottom: none; 
+}
+
+/* --- HIGHLIGHT (Last Read) - GREEN VERSION --- */
+.chapter-row.last-read {
+    /* Green Tint Background */
+    background-color: rgba(0, 230, 118, 0.15); 
+    
+    /* Green Left Bar */
+    border-left: 4px solid #00E676; 
+    
+    /* Green Text */
+    color: #00E676; 
+}
+
+/* Light Mode Override (Darker Green for readability) */
+body.light-mode .chapter-row.last-read {
+    color: #00a855; 
+    background-color: rgba(0, 168, 85, 0.1);
+}
+
+/* New Class for the (RESUME) text */
+.resume-text {
+    font-size: 10px;
+    margin-left: 5px;
+    color: #00E676; /* Green */
+}
+body.light-mode .resume-text {
+    color: #00a855; /* Darker Green */
+}
+
+/* Light Mode Highlight Text */
+body.light-mode .chapter-row.last-read {
+    color: #00a855; /* Slightly darker blue for readability on white */
+    background-color: rgba(0, 188, 212, 0.1);
+}
+
+.free-tag { 
+    color: #888; 
+    font-size: 10px; 
+    font-weight: normal; 
+}
 
 /* --- BOOKMARK DRAWER --- */
 .bookmark-overlay {
@@ -396,19 +465,25 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     color: inherit; word-wrap: break-word;
 }
 
-/* --- POPUP NOTIFICATION --- */
+/* --- TOAST NOTIFICATION (BOTTOM & TRANSPARENT) --- */
 #toast-notification {
     visibility: hidden; min-width: 250px;
-    background-color: rgba(40, 40, 40, 0.95);
+    background-color: rgba(0, 0, 0, 0.85) !important; /* FIXED */
+    color: #fff !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff; text-align: center; border-radius: 16px;
-    padding: 20px 30px; position: fixed; z-index: 2000;
-    left: 50%; top: 80px; transform: translateX(-50%);
+    text-align: center; border-radius: 50px;
+    padding: 15px 30px; position: fixed; z-index: 2000;
+    left: 50%; 
+    bottom: 100px; /* FIXED: Bottom position */
+    top: auto;
+    transform: translateX(-50%);
     box-shadow: 0 4px 20px rgba(0,0,0,0.6); font-size: 15px;
-    opacity: 0; transition: opacity 0.4s ease, top 0.4s ease;
+    opacity: 0; transition: opacity 0.4s ease, bottom 0.4s ease;
     backdrop-filter: blur(5px);
 }
-#toast-notification.show { visibility: visible; opacity: 1; top: 100px; }
+#toast-notification.show { visibility: visible; opacity: 1; bottom: 120px; }
+
+/* --- END OF CHAPTER POPUP (FIXED: ALWAYS DARK) --- */
 .popup-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.7); z-index: 2000;
@@ -416,10 +491,15 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     backdrop-filter: blur(3px);
 }
 .popup-box {
-    background: var(--card-bg); padding: 30px; border-radius: 12px;
+    /* FIXED: Force Dark Transparent Background + White Text */
+    background: rgba(20, 20, 20, 0.95) !important; 
+    color: white !important;
+    padding: 30px; border-radius: 12px;
     text-align: center; width: 80%; max-width: 300px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #444;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 1px solid #444;
 }
+.popup-box h3, .popup-box p { color: white !important; }
+
 .popup-btn {
     background: var(--primary); border: none; padding: 10px 20px;
     color: #000; font-weight: bold; border-radius: 50px;
@@ -447,21 +527,17 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
 
 /* --- READER HEADER CENTER ALIGNMENT --- */
 .reader-header-content {
-    flex: 1;               /* Takes up all middle space */
+    flex: 1;               
     display: flex;
     flex-direction: column;
-    align-items: center;   /* Horizontally centers title */
-    justify-content: center; /* Vertically centers title */
+    align-items: center;   
+    justify-content: center; 
     z-index: 10;
     width: 100%;
-    gap: 5px;             /* Space between title and dropdown */
+    gap: 5px;             
 }
 
-/* style.css - ADD THIS FOR THE NEW WORLD LIST VIEW */
-
-/* style.css - UPDATED WORLD LIST VIEW */
-
-/* 1. World Grid Container */
+/* --- WORLD LIST VIEW --- */
 .world-list-container {
     display: flex;
     flex-direction: column;
@@ -469,7 +545,6 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     padding: 20px;
 }
 
-/* 2. List Item (The horizontal card) */
 .list-item {
     display: flex;
     align-items: flex-start;
@@ -478,15 +553,18 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     margin-bottom: 10px;
 }
 
-/* 3. Cover Image Wrapper (Left Side - Clean) */
 .list-cover-wrapper {
-    width: 100px; /* Fixed width */
+    width: 100px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    /* Removed text styles below */
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.list-cover-wrapper:active {
+    transform: scale(0.95);
+    opacity: 0.8; 
 }
 
 .list-cover-img {
@@ -497,25 +575,27 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
-/* 4. Info Box (Right Side) */
 .list-info-box {
     flex: 1; 
-    background-color: #555555; /* Grey Box */
+    background-color: #555555;
     border-radius: 12px;
     padding: 15px;
     color: white;
     cursor: pointer;
-    min-height: 130px; /* Slightly taller to fit info */
+    min-height: 130px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Start from top */
+    justify-content: flex-start;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.1s ease, opacity 0.1s ease;
 }
-
-/* Light Mode Support */
 body.light-mode .list-info-box {
     background-color: #e0e0e0;
     color: #333;
+}
+.list-info-box:active {
+    transform: scale(0.98);
+    opacity: 0.9;
 }
 
 .list-info-title {
@@ -526,10 +606,9 @@ body.light-mode .list-info-box {
     line-height: 1.2;
 }
 
-/* New Style for Genre & Views */
 .list-info-stats {
     font-size: 12px;
-    color: #cccccc; /* Light grey text */
+    color: #cccccc;
     margin-bottom: 10px;
     font-weight: bold;
 }
@@ -540,28 +619,7 @@ body.light-mode .list-info-stats { color: #666; }
     line-height: 1.4;
     opacity: 0.9;
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* Limit lines */
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
-
-/* Add this to style.css to enable Click Animation */
-
-/* 1. Animate the Cover Wrapper */
-.list-cover-wrapper {
-    transition: transform 0.1s ease, opacity 0.1s ease; /* Smooth speed */
-}
-.list-cover-wrapper:active {
-    transform: scale(0.95); /* Shrink slightly */
-    opacity: 0.8;           /* Fade slightly */
-}
-
-/* 2. Animate the Info Box */
-.list-info-box {
-    transition: transform 0.1s ease, opacity 0.1s ease;
-}
-.list-info-box:active {
-    transform: scale(0.98); /* Shrink slightly */
-    opacity: 0.9;
-    background-color: #444; /* Optional: Darken color on click */
 }
