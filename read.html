@@ -20,7 +20,7 @@
             <select id="ep-select" onchange="jumpToEp(this.value)" style="display:none;"></select>
         </div>
 
-        <div class="icon-box" onclick="toggleThemeLocal()" style="flex: 0 0 50px; display: flex; align-items: center; justify-content: flex-end;">
+        <div class="icon-box" onclick="toggleTheme()" style="flex: 0 0 50px; display: flex; align-items: center; justify-content: flex-end;">
             <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn">
         </div>
         
@@ -74,27 +74,6 @@
             document.body.classList.remove('is-scrolling');
         }, 150);
     }, false);
-
-    // --- 2. THEME LOGIC ---
-    const savedTheme = localStorage.getItem("theme");
-    const themeBtn = document.getElementById("theme-btn");
-    
-    if (savedTheme === "light") {
-        document.body.classList.add("light-mode");
-        if(themeBtn) themeBtn.src = "images/icons/icon_moon.png";
-    }
-
-    function toggleThemeLocal() {
-        document.body.classList.toggle("light-mode");
-        const btn = document.getElementById("theme-btn");
-        if (document.body.classList.contains("light-mode")) {
-            localStorage.setItem("theme", "light");
-            btn.src = "images/icons/icon_moon.png";
-        } else {
-            localStorage.setItem("theme", "dark");
-            btn.src = "images/icons/icon_sun.png";
-        }
-    }
 
     // --- 3. STORY LOADING LOGIC ---
     const params = new URLSearchParams(window.location.search);

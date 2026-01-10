@@ -10,7 +10,7 @@
 <div class="app-container">
 
     <div class="header" style="justify-content: space-between;">
-        <div onclick="location.href='index.html'" style="cursor: pointer; width: 40px;">
+        <div onclick="location.href='index.html'" style="cursor: pointer; width: 40px; display:flex; align-items:center;">
             <img src="images/icons/icon_back.png" class="icon-back-special" alt="Back">
         </div>
         
@@ -18,19 +18,20 @@
             World
         </div>
         
-        <div style="width: 40px; text-align: right;">
-            <img id="theme-btn" src="images/icons/icon_sun.png" style="width: 24px; height: 24px;" onclick="toggleThemeLocal()">
+        <div class="icon-box" onclick="toggleTheme()" style="width: 40px; align-items: flex-end;">
+            <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn">
         </div>
     </div>
 
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search..." onkeyup="handleLocalSearch(event)">
-        <button onclick="localSearch()">
+        <input type="text" id="search-input" placeholder="Search title or author..." 
+            oninput="liveSearch(this.value)" autocomplete="off">
+        <button>
             <img src="images/icons/icon_search.png" alt="Search">
         </button>
     </div>
 
-    <div class="story-grid" id="grid-container"></div>
+    <div class="world-list-container" id="grid-container"></div>
 
 </div>
 
@@ -38,97 +39,96 @@
 <script src="app.js"></script>
 
 <script>
-    // 1. THEME CHECK
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-        document.body.classList.add("light-mode");
-        document.getElementById("theme-btn").src = "images/icons/icon_moon.png";
-    }
-
-    // 2. TOGGLE FUNCTION
-    function toggleThemeLocal() {
-        document.body.classList.toggle("light-mode");
-        const btn = document.getElementById("theme-btn");
-        if (document.body.classList.contains("light-mode")) {
-            localStorage.setItem("theme", "light");
-            btn.src = "images/icons/icon_moon.png";
-        } else {
-            localStorage.setItem("theme", "dark");
-            btn.src = "images/icons/icon_sun.png";
-        }
-    }
-
+    // --- 1. SETUP & INITIALIZATION ---
     const params = new URLSearchParams(window.location.search);
-    const type = params.get('type'); 
-    const query = params.get('q'); 
+    const type = params.get('type') || 'all'; // Default to 'all' if no type
+    const container = document.getElementById("grid-container");
 
+    // Set Page Title
     const titles = { 
         comic: "Comic World", 
         novel: "Novel World", 
         story: "Story World", 
-        search: "Global Search" 
+        search: "All Stories",
+        all: "All Stories"
     };
     document.getElementById("page-title").innerText = titles[type] || "World";
 
-    if (query) document.getElementById("search-input").value = query;
+    // --- 2. RENDER FUNCTION (Draws the list) ---
+    function renderList(filterText = "") {
+        container.innerHTML = ""; // Clear current list
+        let count = 0;
+        const searchLower = filterText.toLowerCase();
 
-    const container = document.getElementById("grid-container");
-    container.innerHTML = ""; 
+        for (let key in db) {
+            let item = db[key];
 
-    let count = 0;
+            // Safety Checks
+            if (item.released === false) continue;
+            if (item.hidden === true) continue;
 
-    for (let key in db) {
-        let item = db[key];
-        let match = true;
-
-        // 🛑 NEW CODE: SKIP IF NOT RELEASED
-        if (item.released === false) { continue; } 
-
-        if (item.hidden === true) { continue; }
-
-        if (type !== 'search' && item.type !== type) match = false;
-
-        if (query) {
-            const searchText = query.toLowerCase();
-            const titleMatch = item.title.toLowerCase().includes(searchText);
-            const authorMatch = item.author.toLowerCase().includes(searchText);
-            if (!titleMatch && !authorMatch) match = false;
-        }
-
-        if (match) {
-            count++;
-            let badgeHTML = "";
-            if (item.badge) {
-                let badgeClass = (item.badge === "NEW") ? "badge-new" : "badge-up";
-                badgeHTML = `<span class="badge ${badgeClass}">${item.badge}</span>`;
+            // 1. Filter by Category (unless we are in 'search' or 'all' mode)
+            if (type !== 'search' && type !== 'all' && item.type !== type) {
+                continue;
             }
 
+            // 2. Filter by Search Text (Live Typing)
+            // If filterText is empty, this part is skipped (shows all)
+            if (searchLower) {
+                const titleMatch = item.title.toLowerCase().includes(searchLower);
+                const authorMatch = (item.author || "").toLowerCase().includes(searchLower);
+                if (!titleMatch && !authorMatch) continue; // Skip if no match
+            }
+
+            // If we get here, show the item!
+            count++;
+            
+            // Render HTML
+            let genre = item.stats.split('•')[0].trim();
+            
             container.innerHTML += `
-                <div class="story-card" onclick="location.href='view.html?id=${item.id}'">
-                    ${badgeHTML}
-                    <img src="${item.cover}" class="story-cover">
-                    <div class="story-title">${item.title}</div>
-                    <div class="story-stats">${item.stats}</div>
+                <div class="list-item">
+                    <div class="list-cover-wrapper" onclick="location.href='view.html?id=${item.id}'">
+                        <div style="position:relative; width:100%;">
+                            ${item.badge ? `<span class="badge ${item.badge === 'NEW' ? 'badge-new' : 'badge-up'}">${item.badge}</span>` : ''}
+                            <img src="${item.cover}" class="list-cover-img">
+                        </div>
+                    </div>
+
+                    <div class="list-info-box" onclick="location.href='view.html?id=${item.id}'">
+                        <div class="list-info-title">${item.title}</div>
+                        <div class="list-info-stats">${item.stats}</div>
+                        <div class="list-info-summary">
+                            ${item.desc || item.summary || "No description available."}
+                        </div>
+                    </div>
                 </div>
             `;
         }
+
+        // Show "No Results" message if empty
+        if (count === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px; color:gray;">
+                    <h3>No results found</h3>
+                    <p>Try searching for something else.</p>
+                </div>`;
+        }
     }
 
-    if (count === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:50px; color:gray;">
-            <h3>No results found</h3>
-            <p>We couldn't find anything for "${query || type}"</p>
-        </div>`;
+    // --- 3. LIVE SEARCH HANDLER ---
+    function liveSearch(text) {
+        renderList(text);
     }
 
-    function handleLocalSearch(event) {
-        if (event.key === 'Enter') localSearch();
-    }
+    // --- 4. RUN ON LOAD ---
+    // Render the full list immediately when page opens
+    renderList(""); 
 
-    function localSearch() {
-        const inputVal = document.getElementById("search-input").value;
-        if (inputVal.trim() !== "") location.href = `world.html?type=${type}&q=${inputVal}`;
-        else location.href = `world.html?type=${type}`;
+    // Sync Theme Icon (Optional)
+    const savedTheme = localStorage.getItem("theme");
+    if(savedTheme === 'light') {
+        document.getElementById("theme-btn").src = "images/icons/icon_moon.png";
     }
 </script>
 </body>

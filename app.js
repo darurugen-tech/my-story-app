@@ -1,155 +1,75 @@
-/* app.js - FINAL VERSION */
+/* app.js - FINAL MASTER VERSION */
 
-// ==========================================
-// 1. THEME TOGGLE LOGIC
-// ==========================================
-function toggleTheme() {
-    const body = document.body;
-    const icon = document.getElementById("theme-icon");
-    const text = document.getElementById("theme-text");
-
-    body.classList.toggle("light-mode");
-
-    if (body.classList.contains("light-mode")) {
-        // LIGHT MODE
-        localStorage.setItem("theme", "light");
-        if (icon) icon.src = "images/icons/icon_moon.png";
-        if (text) text.innerText = "Dark";
-    } else {
-        // DARK MODE
-        localStorage.setItem("theme", "dark");
-        if (icon) icon.src = "images/icons/icon_sun.png";
-        if (text) text.innerText = "Light";
-    }
-}
-
-// RUN ON STARTUP: Check saved theme
-document.addEventListener("DOMContentLoaded", function() {
-    if (localStorage.getItem("theme") === "light") {
+// --- 1. MASTER THEME LOGIC ---
+function applyTheme() {
+    const theme = localStorage.getItem("theme");
+    const isLight = (theme === "light");
+    
+    // Apply to Body
+    if (isLight) {
         document.body.classList.add("light-mode");
-        const icon = document.getElementById("theme-icon");
-        const text = document.getElementById("theme-text");
-        if (icon) icon.src = "images/icons/icon_moon.png";
-        if (text) text.innerText = "Dark";
-    }
-});
-
-
-// ==========================================
-// 2. BOOKMARK DRAWER LOGIC (New!)
-// ==========================================
-
-// A. OPEN THE DRAWER
-function openBookmarks() {
-    toggleBookmarks(); // Slide it up
-    displayBookmarks(); // Fill it with items
-}
-
-// B. TOGGLE (OPEN/CLOSE) ANIMATION
-function toggleBookmarks() {
-    const drawer = document.getElementById('bookmark-drawer');
-    const overlay = document.getElementById('bookmark-overlay');
-    
-    // Safety check: Does the drawer exist in HTML?
-    if (!drawer || !overlay) {
-        console.error("Bookmark drawer HTML is missing in index.html!");
-        return;
+    } else {
+        document.body.classList.remove("light-mode");
     }
 
-    // Toggle CSS classes to make it slide
-    drawer.classList.toggle('active');
-    overlay.classList.toggle('active');
+    // Update Icons (Checks for both IDs used in your pages)
+    updateThemeIcons(isLight);
 }
 
-// C. SAVE BOOKMARK (Called from view.html)
-function saveBookmark(id, title, type, cover) {
-    let bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
-
-    // Check if already saved
-    let exists = bookmarks.find(b => b.id === id);
-    if (exists) {
-        alert("Already bookmarked!");
-        return;
+function updateThemeIcons(isLight) {
+    // ID used in Index.html
+    const icon1 = document.getElementById("theme-icon");
+    const text1 = document.getElementById("theme-text");
+    
+    // ID used in View.html and Read.html
+    const icon2 = document.getElementById("theme-btn"); 
+    
+    if (isLight) {
+        if (icon1) icon1.src = "images/icons/icon_moon.png";
+        if (text1) text1.innerText = "Dark";
+        if (icon2) icon2.src = "images/icons/icon_moon.png";
+    } else {
+        if (icon1) icon1.src = "images/icons/icon_sun.png";
+        if (text1) text1.innerText = "Light";
+        if (icon2) icon2.src = "images/icons/icon_sun.png";
     }
-
-    // Add new bookmark
-    bookmarks.push({ id, title, type, cover });
-    localStorage.setItem("khatoon_bookmarks", JSON.stringify(bookmarks));
-    
-    // Update the list if the drawer is open
-    displayBookmarks();
 }
 
-// D. DISPLAY BOOKMARKS (Fills the list)
-function displayBookmarks() {
-    const listDiv = document.getElementById("bookmark-list");
-    if (!listDiv) return; // Stop if not found
-
-    listDiv.innerHTML = ""; // Clear old list
+function toggleTheme() {
+    const isLight = document.body.classList.contains("light-mode");
     
-    // Get saved data
-    let bookmarks = JSON.parse(localStorage.getItem('khatoon_bookmarks')) || [];
-
-    // 1. Show Empty Message
-    if (bookmarks.length === 0) {
-        listDiv.innerHTML = "<div style='text-align:center; color:gray; padding:20px;'>No saved stories yet!</div>";
-        return;
+    if (isLight) {
+        // Switch to Dark
+        localStorage.setItem("theme", "dark");
+        document.body.classList.remove("light-mode");
+        updateThemeIcons(false);
+    } else {
+        // Switch to Light
+        localStorage.setItem("theme", "light");
+        document.body.classList.add("light-mode");
+        updateThemeIcons(true);
     }
-
-    // 2. Create HTML for each bookmark
-    bookmarks.forEach((item, index) => {
-        let div = document.createElement("div");
-        div.className = "bookmark-item";
-        div.innerHTML = `
-            <img src="${item.cover}" onclick="location.href='view.html?id=${item.id}'">
-            
-            <div class="bookmark-info" onclick="location.href='view.html?id=${item.id}'">
-                <div style="font-weight:bold; color:white;">${item.title}</div>
-                <div style="font-size:12px; color:gray;">${item.type.toUpperCase()}</div>
-            </div>
-            
-            <button class="btn-remove" onclick="removeBookmark(${index})">🗑 Remove</button>
-        `;
-        listDiv.appendChild(div);
-    });
 }
 
-// E. REMOVE BOOKMARK
-function removeBookmark(index) {
-    let bookmarks = JSON.parse(localStorage.getItem('khatoon_bookmarks')) || [];
-    
-    // Delete the item at this index
-    bookmarks.splice(index, 1); 
-    
-    // Save the new list back to storage
-    localStorage.setItem('khatoon_bookmarks', JSON.stringify(bookmarks));
-    
-    // Refresh the visual list immediately
-    displayBookmarks();
-}
+// Run immediately when page loads
+document.addEventListener("DOMContentLoaded", applyTheme);
 
-// --- SEARCH LOGIC ---
 
-// 1. Trigger search when user presses "Enter"
+// --- 2. SEARCH LOGIC ---
 function handleSearch(event) {
-    if (event.key === 'Enter') {
-        performSearch();
-    }
+    if (event.key === 'Enter') performSearch();
 }
 
-// 2. The Search Function
 function performSearch() {
     const query = document.getElementById('search-input').value.toLowerCase();
-    if (!query) return; // Do nothing if empty
-
-    // Redirect to the World page, but with a special "search" mode
+    if (!query) return;
     location.href = `world.html?type=search&q=${query}`;
 }
 
-// --- DRAG TO SCROLL FUNCTION ---
+
+// --- 3. DRAG SCROLL LOGIC ---
 function enableDragScroll() {
     const sliders = document.querySelectorAll('.scroll-container');
-
     sliders.forEach(slider => {
         let isDown = false;
         let startX;
@@ -157,26 +77,23 @@ function enableDragScroll() {
 
         slider.addEventListener('mousedown', (e) => {
             isDown = true;
-            slider.classList.add('active'); // Change cursor to 'grabbing'
+            slider.classList.add('active');
             startX = e.pageX - slider.offsetLeft;
             scrollLeft = slider.scrollLeft;
         });
-
         slider.addEventListener('mouseleave', () => {
             isDown = false;
             slider.classList.remove('active');
         });
-
         slider.addEventListener('mouseup', () => {
             isDown = false;
             slider.classList.remove('active');
         });
-
         slider.addEventListener('mousemove', (e) => {
-            if (!isDown) return; // Stop if we are not clicking
-            e.preventDefault();  // Stop selecting text
+            if (!isDown) return;
+            e.preventDefault();
             const x = e.pageX - slider.offsetLeft;
-            const walk = (x - startX) * 2; // Scroll-fastness (change 2 to 3 for faster)
+            const walk = (x - startX) * 2;
             slider.scrollLeft = scrollLeft - walk;
         });
     });

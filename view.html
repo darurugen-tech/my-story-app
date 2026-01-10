@@ -15,7 +15,7 @@
         </div>
 
         <div class="header-icons">
-            <div class="icon-box" onclick="toggleThemeLocal()">
+            <div class="icon-box" onclick="toggleTheme()">
                 <img id="theme-btn" src="images/icons/icon_sun.png" class="icon-btn">
                 <span id="theme-text" class="icon-label">Light</span>
             </div>
@@ -68,187 +68,186 @@
 <script src="app.js"></script> 
 
 <script>
+    // --- GLOBAL VARIABLES ---
+    let currentStoryData = null;
+    let currentActiveEpisodes = null;
+    let currentLangCode = 'default';
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
     // --- 1. THEME LOGIC ---
     const themeBtn = document.getElementById("theme-btn");
     const themeText = document.getElementById("theme-text");
 
-    function updateThemeUI(isLight) {
-        if (isLight) {
-            document.body.classList.add("light-mode");
-            if(themeBtn) themeBtn.src = "images/icons/icon_moon.png";
-            if(themeText) themeText.innerText = "Dark";
-        } else {
-            document.body.classList.remove("light-mode");
-            if(themeBtn) themeBtn.src = "images/icons/icon_sun.png";
-            if(themeText) themeText.innerText = "Light";
-        }
-    }
-    const savedTheme = localStorage.getItem("theme");
-    updateThemeUI(savedTheme === "light");
-
-    function toggleThemeLocal() {
-        document.body.classList.toggle("light-mode");
-        const isLight = document.body.classList.contains("light-mode");
-        localStorage.setItem("theme", isLight ? "light" : "dark");
-        updateThemeUI(isLight);
-    }
-
     // --- 2. LOAD DATA ---
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    
-    // Store current active language ('kh' or 'en')
-    let currentLang = 'kh'; 
-    let data = null;
-
     if (typeof db !== 'undefined') {
-        data = db[id];
-        if (data) {
+        currentStoryData = db[id];
+        if (currentStoryData) {
             // A. Populate Basic Info
-            document.getElementById("d-cover").src = data.cover;
-            document.getElementById("d-title").innerText = data.title;
-            document.getElementById("d-stats").innerText = data.stats;
-            document.getElementById("d-author").innerText = data.author || "Unknown";
-            document.getElementById("d-year").innerText = data.year || "N/A";
-            document.getElementById("d-desc").innerText = data.desc;
+            document.getElementById("d-cover").src = currentStoryData.cover;
+            document.getElementById("d-title").innerText = currentStoryData.title;
+            document.getElementById("d-stats").innerText = currentStoryData.stats;
+            document.getElementById("d-author").innerText = currentStoryData.author || "Unknown";
+            document.getElementById("d-year").innerText = currentStoryData.year || "N/A";
+            document.getElementById("d-desc").innerText = currentStoryData.desc;
 
             // B. Warning Logic
-            if (data.warning && data.warning.trim() !== "") {
+            if (currentStoryData.warning && currentStoryData.warning.trim() !== "") {
                 document.getElementById("warning-container").style.display = "block";
-                document.getElementById("d-warning").innerText = data.warning;
+                document.getElementById("d-warning").innerText = currentStoryData.warning;
             }
 
-            // C. Language Logic
-            // Check availability
-            const hasKh = !!data.episodes_kh || (data.type !== 'story' && data.episodes); // Non-story types usually store in 'episodes'
-            const hasEn = !!data.episodes_en;
-
+            // C. Language Logic & Initial Render
+            const hasKh = !!currentStoryData.episodes_kh || (currentStoryData.type !== 'story' && currentStoryData.episodes);
+            const hasEn = !!currentStoryData.episodes_en;
             const langContainer = document.getElementById("lang-container");
 
-            if (data.type === 'story') {
+            if (currentStoryData.type === 'story') {
                 if (hasKh && hasEn) {
-                    langContainer.style.display = "flex"; // Show Toggle
+                    langContainer.style.display = "flex"; 
                     switchLang('kh'); // Default to Khmer
                 } else if (hasEn) {
                     langContainer.style.display = "none";
-                    currentLang = 'en';
-                    renderChapters(data.episodes_en, 'en');
+                    switchLang('en');
                 } else {
                     langContainer.style.display = "none";
-                    currentLang = 'kh';
-                    renderChapters(data.episodes_kh, 'kh');
+                    switchLang('kh');
                 }
             } else {
-                // For Novels/Comics (usually single language structure in your DB)
+                // Novels/Comics
                 langContainer.style.display = "none";
-                renderChapters(data.episodes, 'default');
+                currentLangCode = 'default';
+                currentActiveEpisodes = currentStoryData.episodes;
+                renderChapterList(); // Draw the list
             }
 
-            // D. Bookmark Logic (Same as before)
-            setupBookmarkButton(data);
+            // D. Bookmark Logic
+            setupBookmarkButton(currentStoryData);
         }
     }
 
     // --- 3. SWITCH LANGUAGE FUNCTION ---
     function switchLang(lang) {
-        currentLang = lang;
+        currentLangCode = lang;
         
         // Update Buttons UI
         document.getElementById('btn-kh').className = (lang === 'kh') ? 'lang-btn active' : 'lang-btn';
         document.getElementById('btn-en').className = (lang === 'en') ? 'lang-btn active' : 'lang-btn';
 
-        // Render List
-        if (lang === 'kh') renderChapters(data.episodes_kh, 'kh');
-        else renderChapters(data.episodes_en, 'en');
+        // Update Data Source
+        if (lang === 'kh') {
+            currentActiveEpisodes = currentStoryData.episodes_kh;
+        } else {
+            currentActiveEpisodes = currentStoryData.episodes_en;
+        }
+
+        // Re-draw the list
+        renderChapterList();
     }
 
-    // --- 4. RENDER CHAPTERS (Scrollable Box) ---
-    function renderChapters(episodesData, langCode) {
+    // --- 4. RENDER CHAPTERS (FIXED: FAST & DIRECT LINK) ---
+    function renderChapterList() {
         const listDiv = document.getElementById("chapter-list");
-        listDiv.innerHTML = ""; // Clear existing
-
-        if (!episodesData) {
+        
+        // Safety Check
+        if (!currentActiveEpisodes) {
             listDiv.innerHTML = "<div style='padding:20px; text-align:center; color:#666;'>No chapters available.</div>";
             return;
         }
 
-        // Get keys and Sort Descending (Newest first)
-        // Note: '0' (Intro) should usually be at bottom or top? User said "Last one is on the top". 
-        // Assuming keys are "1", "2", "3". Sort b - a.
-        let keys = Object.keys(episodesData).sort((a, b) => b - a);
-
-        // Get Last Read from LocalStorage
-        // Key format: "last_read_storyId" -> returns epNum
+        // 1. Get Highlight from Storage (Always Fresh!)
         const lastReadEp = localStorage.getItem('last_read_' + id);
 
+        // 2. Prepare HTML String (Faster than creating elements one by one)
+        let html = "";
+        
+        // Sort keys (Newest First)
+        let keys = Object.keys(currentActiveEpisodes).sort((a, b) => b - a);
+
         keys.forEach(epNum => {
+            // Label Logic
             let label = "";
-            if (epNum == '0') label = "Intro / Prologue";
-            else label = (data.type === "novel" ? "Chapter " : "Episode ") + epNum;
-            
-            // Add custom Khmer label if needed
-            if (langCode === 'kh' || (langCode === 'default' && data.type === 'novel')) {
-                 if (epNum == '0') label = "អារម្ភកថា";
-                 else label = (data.type === "novel" ? "ជំពូកទី " : "ភាគ ") + epNum;
+            if (epNum == '0') {
+                label = (currentLangCode === 'kh' || (currentLangCode === 'default' && currentStoryData.type === 'novel')) ? "អារម្ភកថា" : "Intro / Prologue";
+            } else {
+                let prefix = (currentStoryData.type === "novel") ? "Chapter " : "Episode ";
+                if (currentLangCode === 'kh' || (currentLangCode === 'default' && currentStoryData.type === 'novel')) {
+                    prefix = (currentStoryData.type === "novel") ? "ជំពូកទី " : "ភាគ ";
+                }
+                label = prefix + epNum;
             }
 
-            // Check if this is the last read one
+            // Check Highlight
             let activeClass = (lastReadEp == epNum) ? " last-read" : "";
+            let resumeText = (lastReadEp == epNum) ? '<span style="font-size:10px; color:#00E5FF; margin-left:5px;">(RESUME)</span>' : '';
 
-            // Create HTML
-            let row = document.createElement("div");
-            row.className = "chapter-row" + activeClass;
-            row.innerHTML = `
-                <span>${label}</span>
-                <span class="free-tag">FREE</span>
+            // GENERATE LINK (Direct URL for reliability)
+            let targetUrl = `read.html?id=${id}&ep=${epNum}`;
+            if (currentLangCode !== 'default') {
+                targetUrl += `&lang=${currentLangCode}`;
+            }
+
+            // Build Row HTML (onclick handles both saving and navigation)
+            html += `
+                <div class="chapter-row ${activeClass}" onclick="saveAndGo('${epNum}', '${targetUrl}')">
+                    <span>${label} ${resumeText}</span>
+                    <span class="free-tag">FREE</span>
+                </div>
             `;
-            
-            // On Click -> Go to Read
-            row.onclick = function() {
-                // Save this as last read
-                localStorage.setItem('last_read_' + id, epNum);
-                
-                // Navigate
-                let url = `read.html?id=${id}&ep=${epNum}`;
-                if (langCode !== 'default') url += `&lang=${langCode}`;
-                location.href = url;
-            };
-
-            listDiv.appendChild(row);
         });
+
+        // 3. Update Screen ONCE
+        listDiv.innerHTML = html;
     }
 
-    // --- 5. BOOKMARK SETUP ---
+    // Helper to save progress before moving
+    function saveAndGo(epNum, url) {
+        localStorage.setItem('last_read_' + id, epNum);
+        location.href = url;
+    }
+
+    // --- 5. EVENT LISTENER (THE FIX FOR BACK BUTTON) ---
+    window.addEventListener('pageshow', function(event) {
+        // This runs every time the page appears (even from Back button)
+        if (currentStoryData && currentActiveEpisodes) {
+            renderChapterList();
+        }
+    });
+
+    // --- 6. BOOKMARK SETUP ---
     function setupBookmarkButton(item) {
         const btnSave = document.getElementById("btn-save");
         let bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
         
-        // Check initial state
         let isSaved = bookmarks.some(b => b.id === item.id);
-        btnSave.src = isSaved ? "images/icons/icon_bookmark_red.png" : "images/icons/icon_bookmark.png";
+        if(btnSave) btnSave.src = isSaved ? "images/icons/icon_bookmark_red.png" : "images/icons/icon_bookmark.png";
 
-        btnSave.onclick = function() {
-            bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
-            let index = bookmarks.findIndex(b => b.id === item.id);
+        if(btnSave) {
+            btnSave.onclick = function() {
+                bookmarks = JSON.parse(localStorage.getItem("khatoon_bookmarks")) || [];
+                let index = bookmarks.findIndex(b => b.id === item.id);
 
-            if (index > -1) {
-                bookmarks.splice(index, 1);
-                btnSave.src = "images/icons/icon_bookmark.png";
-                showToast("Removed from Library");
-            } else {
-                bookmarks.push({ id: item.id, title: item.title, type: item.type, cover: item.cover });
-                btnSave.src = "images/icons/icon_bookmark_red.png";
-                showToast("Saved to Library");
-            }
-            localStorage.setItem("khatoon_bookmarks", JSON.stringify(bookmarks));
-        };
+                if (index > -1) {
+                    bookmarks.splice(index, 1);
+                    btnSave.src = "images/icons/icon_bookmark.png";
+                    showToast("Removed from Library");
+                } else {
+                    bookmarks.push({ id: item.id, title: item.title, type: item.type, cover: item.cover });
+                    btnSave.src = "images/icons/icon_bookmark_red.png";
+                    showToast("Saved to Library");
+                }
+                localStorage.setItem("khatoon_bookmarks", JSON.stringify(bookmarks));
+            };
+        }
     }
 
     function showToast(msg) {
         const t = document.getElementById("toast-notification");
-        t.innerText = msg;
-        t.className = "show";
-        setTimeout(() => t.className = t.className.replace("show", ""), 3000);
+        if(t) {
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => t.className = t.className.replace("show", ""), 3000);
+        }
     }
 </script>
 </body>

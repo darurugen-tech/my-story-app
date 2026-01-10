@@ -243,7 +243,7 @@ const db = {
         "title": "Rabbit's Dream",
         "cover": "images/covers/cover_story_02.jpg",
         "author": "Bunny Hop",
-	"released": false,
+	"released": true,
         "stats": "Fantasy • 👁️ 800",
         "desc": "A rabbit goes to the moon.",
         "episodes_kh": {
@@ -271,7 +271,7 @@ const db = {
         "title": "Lost Boy",
         "cover": "images/covers/cover_story_03.jpg",
         "author": "Sad Tales",
-	"released": false,
+	"released": true,
         "stats": "Drama • 👁️ 2.1k",
         "desc": "Lost in the woods.",
         "content_en": [
@@ -287,7 +287,7 @@ const db = {
         "title": "Little Star",
         "cover": "images/covers/cover_story_04.jpg",
         "author": "Night Sky",
-        "released": false,
+        "released": true,
         "stats": "Kids • 👁️ 50",
         "desc": "A star falls down.",
         "content_en": [
@@ -303,7 +303,7 @@ const db = {
         "title": "Jungle Friends",
         "cover": "images/covers/cover_story_05.jpg",
         "author": "Animal Planet",
-        "released": false,
+        "released": true,
         "stats": "Adventure • 👁️ 120",
         "desc": "Friends in the jungle.",
         "content_en": [

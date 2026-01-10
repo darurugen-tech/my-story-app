@@ -456,3 +456,112 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
     width: 100%;
     gap: 5px;             /* Space between title and dropdown */
 }
+
+/* style.css - ADD THIS FOR THE NEW WORLD LIST VIEW */
+
+/* style.css - UPDATED WORLD LIST VIEW */
+
+/* 1. World Grid Container */
+.world-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+/* 2. List Item (The horizontal card) */
+.list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 3. Cover Image Wrapper (Left Side - Clean) */
+.list-cover-wrapper {
+    width: 100px; /* Fixed width */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    /* Removed text styles below */
+}
+
+.list-cover-img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* 4. Info Box (Right Side) */
+.list-info-box {
+    flex: 1; 
+    background-color: #555555; /* Grey Box */
+    border-radius: 12px;
+    padding: 15px;
+    color: white;
+    cursor: pointer;
+    min-height: 130px; /* Slightly taller to fit info */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Start from top */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Light Mode Support */
+body.light-mode .list-info-box {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.list-info-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'Kantumruy Pro', sans-serif;
+    line-height: 1.2;
+}
+
+/* New Style for Genre & Views */
+.list-info-stats {
+    font-size: 12px;
+    color: #cccccc; /* Light grey text */
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+body.light-mode .list-info-stats { color: #666; }
+
+.list-info-summary {
+    font-size: 11px;
+    line-height: 1.4;
+    opacity: 0.9;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Limit lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Add this to style.css to enable Click Animation */
+
+/* 1. Animate the Cover Wrapper */
+.list-cover-wrapper {
+    transition: transform 0.1s ease, opacity 0.1s ease; /* Smooth speed */
+}
+.list-cover-wrapper:active {
+    transform: scale(0.95); /* Shrink slightly */
+    opacity: 0.8;           /* Fade slightly */
+}
+
+/* 2. Animate the Info Box */
+.list-info-box {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.list-info-box:active {
+    transform: scale(0.98); /* Shrink slightly */
+    opacity: 0.9;
+    background-color: #444; /* Optional: Darken color on click */
+}
