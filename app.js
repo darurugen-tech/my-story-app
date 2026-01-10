@@ -1,9 +1,9 @@
-/* app.js - FINAL MASTER VERSION */
+/* app.js - FINAL VERSION (Fixes Theme Lag) */
 
 // --- 1. MASTER THEME LOGIC ---
 function applyTheme() {
     const theme = localStorage.getItem("theme");
-    const isLight = (theme === "light");
+    const isLight = (theme === "light"); // Default is Dark, so check if Light
     
     // Apply to Body
     if (isLight) {
@@ -24,14 +24,20 @@ function updateThemeIcons(isLight) {
     // ID used in View.html and Read.html
     const icon2 = document.getElementById("theme-btn"); 
     
+    // Image Paths
+    const sunIcon = "images/icons/icon_sun.png";
+    const moonIcon = "images/icons/icon_moon.png";
+
     if (isLight) {
-        if (icon1) icon1.src = "images/icons/icon_moon.png";
+        // We are in Light Mode -> Show Moon (to switch to Dark)
+        if (icon1) icon1.src = moonIcon;
         if (text1) text1.innerText = "Dark";
-        if (icon2) icon2.src = "images/icons/icon_moon.png";
+        if (icon2) icon2.src = moonIcon;
     } else {
-        if (icon1) icon1.src = "images/icons/icon_sun.png";
+        // We are in Dark Mode -> Show Sun (to switch to Light)
+        if (icon1) icon1.src = sunIcon;
         if (text1) text1.innerText = "Light";
-        if (icon2) icon2.src = "images/icons/icon_sun.png";
+        if (icon2) icon2.src = sunIcon;
     }
 }
 
@@ -51,21 +57,21 @@ function toggleTheme() {
     }
 }
 
-// Run immediately when page loads
-document.addEventListener("DOMContentLoaded", applyTheme);
-
-
 // --- 2. SEARCH LOGIC ---
 function handleSearch(event) {
     if (event.key === 'Enter') performSearch();
 }
 
 function performSearch() {
-    const query = document.getElementById('search-input').value.toLowerCase();
+    const input = document.getElementById('search-input');
+    if (!input) return;
+    
+    const query = input.value.trim();
     if (!query) return;
-    location.href = `world.html?type=search&q=${query}`;
+    
+    // Redirect to World Page
+    location.href = `world.html?type=search&q=${encodeURIComponent(query)}`;
 }
-
 
 // --- 3. DRAG SCROLL LOGIC ---
 function enableDragScroll() {
@@ -98,3 +104,16 @@ function enableDragScroll() {
         });
     });
 }
+
+// --- 4. AUTO-RUN ON LOAD (THE FIX) ---
+
+// Run when page loads normally
+document.addEventListener("DOMContentLoaded", () => {
+    applyTheme();
+    enableDragScroll();
+});
+
+// Run AGAIN when page is shown from "Back" history (Fixes the Lag)
+window.addEventListener("pageshow", () => {
+    applyTheme();
+});
