@@ -135,6 +135,7 @@
             // D. Bookmark Logic
             setupBookmarkButton(currentStoryData);
         }
+        
     }
 
     // --- 3. SWITCH LANGUAGE FUNCTION ---
@@ -212,9 +213,18 @@ let resumeText = (lastReadEp == epNum) ? '<span class="resume-text">(RESUME)</sp
         listDiv.innerHTML = html;
     }
 
-    // Helper to save progress before moving
+    // Helper to save progress AND add to history before moving
     function saveAndGo(epNum, url) {
+        // 1. Save Last Read Episode
         localStorage.setItem('last_read_' + id, epNum);
+        
+        // 2. Add to "Continue Reading" History ONLY now
+        // (Make sure app.js is loaded so this function exists)
+        if (typeof addToHistory === 'function') {
+            addToHistory(id);
+        }
+
+        // 3. Go to Reading Page
         location.href = url;
     }
 

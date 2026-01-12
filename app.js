@@ -117,3 +117,25 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("pageshow", () => {
     applyTheme();
 });
+
+/* Add this to the bottom of app.js */
+
+// --- HISTORY LOGIC ---
+function addToHistory(id) {
+    let history = JSON.parse(localStorage.getItem('khatoon_history')) || [];
+    
+    // Remove if already in list (so we can move it to the top)
+    history = history.filter(item => item !== id);
+    
+    // Add to beginning of array
+    history.unshift(id);
+    
+    // Limit to 10 items
+    if (history.length > 10) history.pop();
+    
+    localStorage.setItem('khatoon_history', JSON.stringify(history));
+}
+
+function getHistory() {
+    return JSON.parse(localStorage.getItem('khatoon_history')) || [];
+}

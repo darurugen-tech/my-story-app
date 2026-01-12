@@ -44,6 +44,11 @@
         </button>
     </div>
 
+    <div id="section-history" class="section-card" style="display:none;">
+            <div class="card-title">● Continue Reading</div>
+            <div id="list-history" class="scroll-container"></div>
+        </div>
+
     <div class="section-card">
         <div class="card-title">● Story world</div>
         <div id="list-story" class="scroll-container"></div>
@@ -116,19 +121,12 @@
         updateThemeUI(isLight);
     }
 
-    // --- 2. AUTOMATIC STORY LOADER ---
-    const storyList = document.getElementById("list-story");
-    const novelList = document.getElementById("list-novel");
-    const comicList = document.getElementById("list-comic");
-
-    for (let key in db) {
-        let item = db[key];
-        
-        if (item.released === false) { continue; } 
-
+    // --- 2. AUTOMATIC STORY LOADER (UPDATED WITH HISTORY) ---
+    
+    // Helper function to create the HTML for a card (prevents duplicate code)
+    function createStoryCard(item) {
         let badgeHTML = item.badge ? `<span class="badge ${item.badge === "NEW" ? "badge-new" : "badge-up"}">${item.badge}</span>` : "";
-
-        let cardHTML = `
+        return `
             <div class="story-card" onclick="location.href='view.html?id=${item.id}&from=home'">
                 <div style="position:relative;">
                     ${badgeHTML} 
@@ -138,6 +136,42 @@
                 <div class="story-stats">${item.stats}</div>
             </div>
         `;
+    }
+
+    // A. LOAD HISTORY (Continue Reading)
+    const historySection = document.getElementById("section-history");
+    const historyList = document.getElementById("list-history");
+    
+    // Get history from storage
+    const historyIds = JSON.parse(localStorage.getItem('khatoon_history')) || [];
+
+    if (historyIds.length > 0 && historyList) {
+        let hasHistoryData = false;
+        historyIds.forEach(id => {
+            if (db[id]) {
+                // Add card to history list
+                historyList.innerHTML += createStoryCard(db[id]);
+                hasHistoryData = true;
+            }
+        });
+        
+        // Show the history section if we found stories
+        if (hasHistoryData && historySection) {
+            historySection.style.display = "block";
+        }
+    }
+
+    // B. LOAD ALL OTHER SECTIONS
+    const storyList = document.getElementById("list-story");
+    const novelList = document.getElementById("list-novel");
+    const comicList = document.getElementById("list-comic");
+
+    for (let key in db) {
+        let item = db[key];
+        
+        if (item.released === false) { continue; } 
+
+        let cardHTML = createStoryCard(item);
 
         if (item.type === 'story' && storyList) storyList.innerHTML += cardHTML;
         else if (item.type === 'novel' && novelList) novelList.innerHTML += cardHTML;

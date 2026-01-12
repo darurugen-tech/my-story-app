@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KhaToon Editor (Auto-Fix Version)</title>
+    <style>
+        :root { --primary: #ffb400; --bg: #121212; --panel: #1e1e1e; --text: #eee; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background: #000; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .brand { padding: 20px; font-size: 18px; font-weight: bold; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; }
+        .file-controls { padding: 15px; background: #111; border-bottom: 1px solid #333; }
+        .btn-file { width: 100%; padding: 8px; margin-bottom: 5px; cursor: pointer; border-radius: 4px; border: 1px solid #444; background: #222; color: white; font-size: 12px; }
+        .btn-file:hover { background: #333; }
+        .story-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .story-item { display: flex; align-items: center; padding: 10px; margin-bottom: 5px; background: var(--panel); border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .story-item:hover, .story-item.active { background: var(--primary); color: black; }
+        .story-item img { width: 30px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 3px; background: #333; }
+        .story-info div:first-child { font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .story-info div:last-child { font-size: 10px; opacity: 0.7; }
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .toolbar { padding: 15px 30px; background: var(--panel); border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .btn-save { background: var(--primary); color: black; border: none; padding: 10px 25px; font-weight: bold; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        .btn-save:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,180,0,0.4); }
+        .workspace { flex: 1; padding: 30px; display: flex; gap: 30px; overflow-y: auto; }
+        .panel { background: var(--panel); padding: 20px; border-radius: 8px; height: fit-content; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        .writing-area { flex: 1; display: flex; flex-direction: column; height: 100%; }
+        .chapter-bar { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .chip { padding: 5px 12px; background: #333; border-radius: 15px; font-size: 12px; cursor: pointer; border: 1px solid transparent; }
+        .chip.active { background: var(--primary); color: black; font-weight: bold; }
+        .chip-add { border: 1px dashed #666; color: #aaa; }
+        #editor { flex: 1; resize: none; line-height: 1.6; font-size: 16px; min-height: 400px; white-space: pre-wrap; }
+        .img-helper { font-size: 12px; color: #aaa; margin-top: 5px; background: #252525; padding: 10px; border-radius: 4px; display: none; }
+        .blank-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #555; }
+        .blank-state h2 { color: #333; }
+        
+        /* New Fix Button Style */
+        .fix-msg { background: #d32f2f; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 12px; display: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="brand">KhaToon Editor</div>
+    <div class="file-controls">
+        <label>1. Load File</label>
+        <button class="btn-file" onclick="document.getElementById('file-upload').click()">📂 Open stories.js</button>
+        <input type="file" id="file-upload" accept=".js" style="display: none;" onchange="handleFileUpload(this)">
+    </div>
+    <div class="story-list" id="story-list"></div>
+    <div style="padding: 10px;">
+        <button class="btn-file" style="background: #333; border: 1px dashed #666;" onclick="addNewStory()">+ Create New Story</button>
+    </div>
+</div>
+
+<div class="main">
+    <div class="toolbar">
+        <h3 id="header-title" style="margin:0; font-size: 16px; color: #888;">No story selected</h3>
+        <button class="btn-save" onclick="downloadStoriesJS()">💾 Download Updated stories.js</button>
+    </div>
+
+    <div class="workspace" id="workspace" style="display:none;">
+        <div class="panel" style="width: 280px;">
+            <div class="form-group">
+                <img id="prev-cover" src="" style="width:100%; height:160px; object-fit:cover; background:#000; border-radius:4px; margin-bottom:10px;">
+                <label>Cover Image Path</label>
+                <input type="text" id="inp-cover" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="inp-title" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select id="inp-type" onchange="updateUI()">
+                    <option value="novel">Novel</option>
+                    <option value="comic">Comic</option>
+                    <option value="story">Story (Kids)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Author</label>
+                <input type="text" id="inp-author" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>Status Badge</label>
+                <select id="inp-badge" onchange="updateUI()">
+                    <option value="">None</option>
+                    <option value="NEW">NEW 🔴</option>
+                    <option value="UP">UP 🔵</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="writing-area panel">
+            <div id="fix-warning" class="fix-msg" onclick="forceFix()">⚠️ Broken lines detected! Click here to Auto-Fix.</div>
+            
+            <label>Select Chapter to Edit</label>
+            <div class="chapter-bar" id="chapter-list"></div>
+            <textarea id="editor" placeholder="Write your story content here..." oninput="saveEditorContent()"></textarea>
+            <div id="comic-tip" class="img-helper">
+                <strong>💡 Comic Mode:</strong> Paste image file paths below, one per line.<br>
+                Example:<br>images/my_comic/page1.jpg<br>images/my_comic/page2.jpg
+            </div>
+        </div>
+    </div>
+
+    <div id="blank-state" class="blank-state">
+        <h1>👈 Open 'stories.js' to start</h1>
+        <p>Upload your file using the button in the top left.</p>
+    </div>
+</div>
+
+<script>
+    let db = {}; 
+    let activeId = null;
+    let activeEp = null;
+
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let content = e.target.result;
+                let jsonStr = content.replace("const db =", "").trim();
+                if (jsonStr.endsWith(";")) jsonStr = jsonStr.slice(0, -1);
+                
+                // Parse the JS Object
+                const parseFn = new Function("return " + jsonStr);
+                db = parseFn();
+                
+                // --- 🛑 AUTO-FIX RUNS HERE ---
+                sanitizeAllData(); 
+                
+                renderSidebar();
+                document.getElementById("blank-state").style.display = "none";
+                alert("Stories loaded & broken lines were auto-fixed!");
+            } catch (err) {
+                alert("Error reading file! " + err);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- NEW FUNCTION: Cleans up the "n" error globally ---
+    function sanitizeAllData() {
+        Object.keys(db).forEach(key => {
+            let item = db[key];
+            let eps = item.episodes || item.episodes_en || {};
+            
+            Object.keys(eps).forEach(epKey => {
+                let content = eps[epKey];
+                
+                // If it is an array with 1 messy string containing "\n"
+                if (Array.isArray(content) && content.length === 1 && typeof content[0] === 'string') {
+                    if (content[0].includes('\n') || content[0].includes('\\n')) {
+                        // FIX: Split by literal \n or real newline
+                        let cleanArray = content[0].split(/\\n|\n/).map(s => s.trim()).filter(s => s !== "");
+                        eps[epKey] = cleanArray;
+                    }
+                }
+            });
+        });
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById("story-list");
+        list.innerHTML = "";
+        Object.keys(db).forEach(key => {
+            let item = db[key];
+            let div = document.createElement("div");
+            div.className = `story-item ${activeId === key ? 'active' : ''}`;
+            div.innerHTML = `<img src="${item.cover || ''}"><div class="story-info"><div>${item.title}</div><div>${item.type.toUpperCase()}</div></div>`;
+            div.onclick = () => loadStory(key);
+            list.appendChild(div);
+        });
+    }
+
+    function loadStory(id) {
+        activeId = id;
+        activeEp = null;
+        renderSidebar();
+        const data = db[id];
+        document.getElementById("workspace").style.display = "flex";
+        document.getElementById("blank-state").style.display = "none";
+        document.getElementById("header-title").innerText = "Editing: " + data.title;
+        document.getElementById("inp-title").value = data.title || "";
+        document.getElementById("inp-cover").value = data.cover || "";
+        document.getElementById("prev-cover").src = data.cover || "";
+        document.getElementById("inp-type").value = data.type || "novel";
+        document.getElementById("inp-author").value = data.author || "";
+        document.getElementById("inp-badge").value = data.badge || "";
+        renderChapterChips();
+        document.getElementById("editor").value = "";
+        document.getElementById("editor").disabled = true;
+        document.getElementById("editor").placeholder = "👈 Select a chapter above to start writing.";
+        document.getElementById("fix-warning").style.display = "none";
+    }
+
+    function renderChapterChips() {
+        const list = document.getElementById("chapter-list");
+        list.innerHTML = "";
+        const data = db[activeId];
+        let eps = data.episodes || data.episodes_en || {};
+        Object.keys(eps).sort((a,b)=>a-b).forEach(epNum => {
+            let chip = document.createElement("div");
+            chip.className = `chip ${activeEp === epNum ? 'active' : ''}`;
+            chip.innerText = epNum == "0" ? "Intro" : `Ep ${epNum}`;
+            chip.onclick = () => loadChapter(epNum);
+            list.appendChild(chip);
+        });
+        let addBtn = document.createElement("div");
+        addBtn.className = "chip chip-add";
+        addBtn.innerText = "+ Add";
+        addBtn.onclick = () => createChapter();
+        list.appendChild(addBtn);
+    }
+
+    function loadChapter(epNum) {
+        activeEp = epNum;
+        renderChapterChips();
+        const data = db[activeId];
+        let eps = data.episodes || data.episodes_en;
+        let content = eps[epNum];
+        const editor = document.getElementById("editor");
+        const comicTip = document.getElementById("comic-tip");
+
+        editor.disabled = false;
+        editor.placeholder = "Start writing...";
+
+        // Ensure content is displayed as clean lines
+        if (Array.isArray(content)) {
+            editor.value = content.join("\n");
+        } else {
+            editor.value = content;
+        }
+        
+        // Double check for broken lines visually
+        if (editor.value.includes("\\n")) {
+             document.getElementById("fix-warning").style.display = "block";
+        } else {
+             document.getElementById("fix-warning").style.display = "none";
+        }
+
+        if (data.type === 'comic') {
+            comicTip.style.display = "block";
+        } else {
+            comicTip.style.display = "none";
+        }
+    }
+
+    // Manual Fix Button (Just in case)
+    function forceFix() {
+        const editor = document.getElementById("editor");
+        let raw = editor.value;
+        // Replace literal "\n" with real new line
+        let fixed = raw.split("\\n").join("\n");
+        editor.value = fixed;
+        saveEditorContent();
+        document.getElementById("fix-warning").style.display = "none";
+    }
+
+    function saveEditorContent() {
+        if (!activeId || !activeEp) return;
+        const val = document.getElementById("editor").value;
+        const data = db[activeId];
+        let eps = data.episodes || data.episodes_en;
+
+        if (data.type === 'comic') {
+            eps[activeEp] = val.split("\n").filter(line => line.trim() !== "");
+        } else {
+            eps[activeEp] = [val];
+        }
+    }
+
+    function updateUI() {
+        if (!activeId) return;
+        const data = db[activeId];
+        data.title = document.getElementById("inp-title").value;
+        data.cover = document.getElementById("inp-cover").value;
+        data.type = document.getElementById("inp-type").value;
+        data.author = document.getElementById("inp-author").value;
+        data.badge = document.getElementById("inp-badge").value;
+        document.getElementById("prev-cover").src = data.cover;
+        document.getElementById("header-title").innerText = "Editing: " + data.title;
+        renderSidebar();
+    }
+
+    function createChapter() {
+        let num = prompt("Chapter Number (e.g. 1, 2, or 0):");
+        if (!num) return;
+        const data = db[activeId];
+        if (!data.episodes) data.episodes = {};
+        data.episodes[num] = [""];
+        loadChapter(num);
+    }
+
+    function addNewStory() {
+        const id = "story_" + Date.now();
+        db[id] = { id: id, type: "novel", title: "Untitled Story", cover: "images/placeholder.jpg", author: "Author Name", episodes: { 1: ["Start writing here..."] } };
+        renderSidebar();
+        loadStory(id);
+    }
+
+    function downloadStoriesJS() {
+        const json = JSON.stringify(db, null, 4);
+        const fileContent = `const db = ${json};`;
+        const blob = new Blob([fileContent], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "stories.js";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        alert("✅ Downloaded! Now replace your old 'stories.js' with this new one.");
+    }
+</script>
+</body>
+</html>
