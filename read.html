@@ -17,7 +17,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
 </head>
-<body>
+<body class="read-page-body">
 <div class="app-container">
 
     <div class="header read-page-header" style="padding: 15px 20px;">
@@ -75,16 +75,6 @@
     
     // IF YOU WANT THE FULL SCRIPT UPDATED, HERE IT IS:
     // ------------------------------------------------
-    
-    // --- 1. SCROLL LOGIC ---
-    let isScrolling;
-    window.addEventListener('scroll', function ( event ) {
-        document.body.classList.add('is-scrolling');
-        window.clearTimeout( isScrolling );
-        isScrolling = setTimeout(function() {
-            document.body.classList.remove('is-scrolling');
-        }, 150);
-    }, false);
 
     // --- 3. STORY LOADING LOGIC ---
     const params = new URLSearchParams(window.location.search);
@@ -122,35 +112,53 @@
     }
     
 
-    // --- THE MAIN CONTENT RENDERER ---
+    // --- RENDER CONTENT (Sign Only for Novels) ---
     function renderContent(source) {
         container.innerHTML = ""; 
         container.removeAttribute("style");
         
+        // 1. Prepare End Sign (Same as before)
+        const endSignHTML = `
+            <div class="end-sign-wrapper" style="text-align: center; margin-top: 50px; margin-bottom: 50px;">
+                <img src="images/icons/end_sign.jpg" class="end-sign-img">
+            </div>
+        `;
+
         if (Array.isArray(source)) {
             let firstItem = source[0] || "";
             
-            // --- IMAGE MODE (Comics) ---
+            // --- A. IMAGE MODE (Stories & Comics) ---
             if (firstItem.includes("images/") || firstItem.includes(".jpg") || firstItem.includes(".png")) {
-                container.className = "read-container image-mode";
-                source.forEach(imgSrc => {
-                    container.innerHTML += `<img src="${imgSrc}">`;
-                });
+                
+                // 1. Horizontal Mode (Stories)
+                if (data.type === "story") {
+                    container.className = "read-container horizontal-mode";
+                    source.forEach(imgSrc => {
+                        container.innerHTML += `<img src="${imgSrc}">`;
+                    });
+                    // REMOVED: container.innerHTML += endSignHTML; 
+                } 
+                // 2. Vertical Mode (Comics)
+                else {
+                    container.className = "read-container image-mode";
+                    container.style.marginTop = ""; 
+                    container.style.height = "";
+                    source.forEach(imgSrc => {
+                        container.innerHTML += `<img src="${imgSrc}">`;
+                    });
+                    // REMOVED: container.innerHTML += endSignHTML;
+                }
             } 
-            // --- TEXT MODE (Novels) ---
+            
+            // --- B. TEXT MODE (Novels) ---
             else {
                 container.className = "read-container text-mode";
-                
-                // Force Styles
-                container.style.fontSize = "18px";     
-                container.style.lineHeight = "1.8";    
-                container.style.padding = "140px 20px 200px 20px";
-                
-                // Use Noto Sans Khmer
+                container.style.fontSize = "22px";     
+                container.style.lineHeight = "2.0";    
+                container.style.padding = "100px 20px 100px 20px";
                 container.style.fontFamily = "'Noto Sans Khmer', sans-serif";
                 container.style.textAlign = "left";
 
-                // Join Text
                 let htmlContent = source.map(line => 
                     `<div style="margin-bottom: 20px;">${line}</div>`
                 ).join(""); 
@@ -158,27 +166,26 @@
                 const customStyles = `
                     <style>
                         .chapter-title {
-                            font-size: 32px !important;    
+                            font-size: 24px !important;    
                             font-weight: bold !important;  
                             text-align: center !important; 
-                            color: var(--text-color) !important;
+                            color: var(--text-color) !important; 
+                            margin-top: 30px !important;
                             margin-bottom: 30px !important;
-                            line-height: 1.4 !important;
+                            line-height: 1.6 !important;
                         }
                     </style>
                 `;
 
-                container.innerHTML = customStyles + htmlContent;
+                // KEEP THIS: Only add the sign here
+                container.innerHTML = customStyles + htmlContent + endSignHTML;
             }
         } else {
-            // String Content Mode
+            // C. Legacy String Mode (Treat as Novel)
             container.className = "read-container text-mode";
-            container.style.fontSize = "26px";
-            container.style.lineHeight = "1.8";
-            container.style.padding = "140px 20px 200px 20px";
-            container.style.fontFamily = "'Noto Sans Khmer', sans-serif";
-            container.style.textAlign = "left";
-            container.innerHTML = `<p>${source}</p>`;
+            container.style.fontSize = "22px";
+            container.style.lineHeight = "2.0";
+            container.innerHTML = `<p>${source}</p>` + endSignHTML;
         }
     }
 

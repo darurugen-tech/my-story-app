@@ -1,40 +1,31 @@
-/* app.js - FINAL VERSION (Fixes Theme Lag) */
+/* app.js - FINAL VERSION (Theme Fix + Permanent History) */
 
 // --- 1. MASTER THEME LOGIC ---
 function applyTheme() {
     const theme = localStorage.getItem("theme");
-    const isLight = (theme === "light"); // Default is Dark, so check if Light
+    const isLight = (theme === "light"); 
     
-    // Apply to Body
     if (isLight) {
         document.body.classList.add("light-mode");
     } else {
         document.body.classList.remove("light-mode");
     }
-
-    // Update Icons (Checks for both IDs used in your pages)
     updateThemeIcons(isLight);
 }
 
 function updateThemeIcons(isLight) {
-    // ID used in Index.html
     const icon1 = document.getElementById("theme-icon");
     const text1 = document.getElementById("theme-text");
-    
-    // ID used in View.html and Read.html
     const icon2 = document.getElementById("theme-btn"); 
     
-    // Image Paths
     const sunIcon = "images/icons/icon_sun.png";
     const moonIcon = "images/icons/icon_moon.png";
 
     if (isLight) {
-        // We are in Light Mode -> Show Moon (to switch to Dark)
         if (icon1) icon1.src = moonIcon;
         if (text1) text1.innerText = "Dark";
         if (icon2) icon2.src = moonIcon;
     } else {
-        // We are in Dark Mode -> Show Sun (to switch to Light)
         if (icon1) icon1.src = sunIcon;
         if (text1) text1.innerText = "Light";
         if (icon2) icon2.src = sunIcon;
@@ -43,14 +34,11 @@ function updateThemeIcons(isLight) {
 
 function toggleTheme() {
     const isLight = document.body.classList.contains("light-mode");
-    
     if (isLight) {
-        // Switch to Dark
         localStorage.setItem("theme", "dark");
         document.body.classList.remove("light-mode");
         updateThemeIcons(false);
     } else {
-        // Switch to Light
         localStorage.setItem("theme", "light");
         document.body.classList.add("light-mode");
         updateThemeIcons(true);
@@ -69,7 +57,6 @@ function performSearch() {
     const query = input.value.trim();
     if (!query) return;
     
-    // Redirect to World Page
     location.href = `world.html?type=search&q=${encodeURIComponent(query)}`;
 }
 
@@ -87,14 +74,8 @@ function enableDragScroll() {
             startX = e.pageX - slider.offsetLeft;
             scrollLeft = slider.scrollLeft;
         });
-        slider.addEventListener('mouseleave', () => {
-            isDown = false;
-            slider.classList.remove('active');
-        });
-        slider.addEventListener('mouseup', () => {
-            isDown = false;
-            slider.classList.remove('active');
-        });
+        slider.addEventListener('mouseleave', () => { isDown = false; slider.classList.remove('active'); });
+        slider.addEventListener('mouseup', () => { isDown = false; slider.classList.remove('active'); });
         slider.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
@@ -105,37 +86,70 @@ function enableDragScroll() {
     });
 }
 
-// --- 4. AUTO-RUN ON LOAD (THE FIX) ---
-
-// Run when page loads normally
+// --- 4. AUTO-RUN ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
     applyTheme();
     enableDragScroll();
 });
 
-// Run AGAIN when page is shown from "Back" history (Fixes the Lag)
 window.addEventListener("pageshow", () => {
     applyTheme();
 });
 
-/* Add this to the bottom of app.js */
 
-// --- HISTORY LOGIC ---
+// --- 5. PERMANENT HISTORY LOGIC (Cookie + Storage) ---
+
+// Helper: Set Cookie (Lasts 365 Days)
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+// Helper: Get Cookie
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
 function addToHistory(id) {
-    let history = JSON.parse(localStorage.getItem('khatoon_history')) || [];
+    // 1. Try to get history from Storage OR Cookie
+    let raw = localStorage.getItem('khatoon_history');
+    if (!raw) raw = getCookie('khatoon_history');
     
-    // Remove if already in list (so we can move it to the top)
-    history = history.filter(item => item !== id);
+    let history = raw ? JSON.parse(raw) : [];
     
-    // Add to beginning of array
-    history.unshift(id);
+    // 2. Add new ID
+    history = history.filter(item => item !== id); // Remove duplicate
+    history.unshift(id);                           // Add to top
+    if (history.length > 10) history.pop();        // Limit to 10
     
-    // Limit to 10 items
-    if (history.length > 10) history.pop();
-    
-    localStorage.setItem('khatoon_history', JSON.stringify(history));
+    // 3. Save to BOTH locations
+    let strData = JSON.stringify(history);
+    localStorage.setItem('khatoon_history', strData);
+    setCookie('khatoon_history', strData, 365); // Save for 1 year
 }
 
 function getHistory() {
-    return JSON.parse(localStorage.getItem('khatoon_history')) || [];
+    // 1. Try Storage
+    let raw = localStorage.getItem('khatoon_history');
+    
+    // 2. If Storage is empty, Try Cookie (Backup)
+    if (!raw) {
+        raw = getCookie('khatoon_history');
+        // If we found it in cookie but not storage, restore storage!
+        if (raw) localStorage.setItem('khatoon_history', raw);
+    }
+
+    return raw ? JSON.parse(raw) : [];
 }

@@ -169,7 +169,7 @@ body.light-mode .search-container button img { filter: invert(0); }
 /* --- AD BANNER --- */
 .ad-banner-wrapper {
     /* CHANGED: 0 side margins (Top, Right, Bottom, Left) */
-    margin: 0 0 25px 0; 
+    margin: 0 0 0px 0; 
     
     /* CHANGED: Square edges to fit the screen */
     border-radius: 0px !important; 
@@ -295,7 +295,7 @@ body.is-scrolling .read-page-header { transform: translate(-50%, -100%); }
 body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
 #btn-prev-big, #btn-next-big { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
 #btn-next-big { background-color: #333; color: white; }
-#btn-prev-big { background-color: #222; color: #aaa; }
+#btn-prev-big { background-color: #333; color: #ffffff; }
 
 .read-container { width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box; overflow-x: hidden; padding-top: 80px; padding-bottom: 150px !important; }
 .read-container.image-mode { padding-left: 0; padding-right: 0; background-color: #ffffff !important; font-size: 0; line-height: 0; }
@@ -376,4 +376,186 @@ body.light-mode .list-info-stats { color: #666; }
 /* Optional: Make the text smaller too if needed */
 #list-history .story-title {
     font-size: 10px; 
+}
+
+/* --- SMART END SIGN (Auto Dark/Light) --- */
+.end-sign-img {
+    width: 60%;
+    max-width: 200px;
+    display: block;
+    margin: 0 auto;
+    opacity: 0.9;
+    
+    /* DEFAULT (DARK MODE): Invert colors */
+    /* White BG becomes Black, Black Lines become White */
+    filter: invert(1);
+    /* Makes the black background transparent so it blends */
+    mix-blend-mode: screen; 
+}
+
+/* LIGHT MODE OVERRIDE */
+body.light-mode .end-sign-img {
+    /* Restore original colors (Black lines on White) */
+    filter: invert(0);
+    /* Makes the white background transparent */
+    mix-blend-mode: multiply;
+}
+
+/* --- FORCE 3:4 RATIO EVERYWHERE --- */
+
+/* 1. Fix the "View Details" Page Cover */
+.detail-cover-img {
+    width: 120px;       /* Keep your preferred width */
+    aspect-ratio: 3/4;  /* Forces the 3:4 height */
+    object-fit: cover;  /* Crops image to fit cleanly */
+    border-radius: 6px; /* Optional: Matches your rounded theme */
+}
+
+/* 2. Fix the "World" Page Grid Covers */
+/* This targets the cover images inside the world lists */
+.story-cover {
+    width: 100%;        /* Fills the card width */
+    aspect-ratio: 3/4;  /* Forces the 3:4 height */
+    object-fit: cover;  /* Crops image to fit cleanly */
+}
+
+/* --- HORIZONTAL MODE (For Story Type) --- */
+.read-container.horizontal-mode {
+    display: flex;              /* Line them up in a row */
+    flex-direction: row;        
+    overflow-x: auto;           /* Allow side scrolling */
+    overflow-y: hidden;         /* No up/down scrolling */
+    scroll-snap-type: x mandatory; /* Snap to each page */
+    
+    /* Calculate height to fit between Header and Footer */
+    /* Adjust these numbers if your header/footer are larger */
+    height: calc(100vh - 140px); 
+    width: 100%;
+    margin-top: 60px; /* Push down below header */
+    padding: 0;
+    
+    /* Hide Scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+.read-container.horizontal-mode::-webkit-scrollbar { 
+    display: none; /* Chrome/Safari */
+}
+
+/* Make images fit the screen perfectly */
+.read-container.horizontal-mode img {
+    flex: 0 0 100%;      /* Each image takes full width */
+    height: 100%;        /* Fill the container height */
+    width: 100%;
+    object-fit: contain; /* Don't crop the image, show it all */
+    scroll-snap-align: center; /* Snap to center */
+}
+
+/* Make the End Sign sit as the last slide */
+.read-container.horizontal-mode .end-sign-wrapper {
+    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scroll-snap-align: center;
+}
+
+/* --- FULL SCREEN READING LAYOUT (Flexbox) --- */
+
+/* 1. Lock the Body Height */
+body.read-page-body {
+    height: 100vh;      /* Force full screen height */
+    width: 100vw;
+    overflow: hidden;   /* Disable scrolling on the body itself */
+    margin: 0;
+}
+
+/* 2. Make the Container a Flex Column */
+body.read-page-body .app-container {
+    display: flex;
+    flex-direction: column; /* Stack items: Header -> Content -> Footer */
+    height: 100%;
+}
+
+/* 3. Header: Don't grow, stay at top */
+body.read-page-body .header {
+    flex: 0 0 auto;      /* Keep natural height */
+    position: relative;  /* Sit inside the stack (not floating/fixed) */
+    z-index: 10;
+}
+
+/* 4. Footer: Don't grow, stay at bottom */
+body.read-page-body .read-page-footer {
+    flex: 0 0 auto;      /* Keep natural height */
+    z-index: 10;
+    /* Optional: Ensure background is opaque so content doesn't show behind */
+    background-color: var(--card-bg, #000); 
+}
+
+/* 5. THE PAPER AREA (Fills all remaining space) */
+body.read-page-body #content-area {
+    flex: 1;             /* Grow to fill ALL empty space */
+    position: relative;
+    overflow: hidden;    /* Container handles scroll, not body */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* 6. Horizontal Mode Updates */
+.read-container.horizontal-mode {
+    display: flex;
+    flex-direction: row;
+    height: 100%;        /* Fill the #content-area perfectly */
+    width: 100%;
+    overflow-x: auto;    /* Scroll sideways */
+    overflow-y: hidden;  /* No vertical scroll */
+    scroll-snap-type: x mandatory;
+    margin-top: 0 !important; /* Remove old margin */
+    padding: 0 !important;
+}
+
+/* 7. Images Fit the Box */
+.read-container.horizontal-mode img {
+    height: 100%;        /* Match the paper height */
+    width: 100%;         /* Match the paper width */
+    object-fit: contain; /* Show WHOLE image (add black bars if needed) */
+    /* Use 'object-fit: cover' if you want to zoom in to fill completely */
+    flex: 0 0 100%;      /* Each image takes 1 slide */
+    scroll-snap-align: center;
+}
+
+/* --- FIX FOR NOVELS & VERTICAL COMICS (UPDATED) --- */
+
+/* We target the ID (#content-area) because it is stronger than classes */
+#content-area.text-mode, 
+#content-area.image-mode {
+    height: 100%;        /* Fill the space between header/footer */
+    width: 100%;
+    
+    /* FORCE Vertical Scroll */
+    overflow-y: auto !important;    
+    overflow-x: hidden !important;  
+    
+    /* Make scrolling smooth on iPhone */
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* Adjust Padding for Novels */
+#content-area.text-mode {
+    padding: 20px 20px 40px 20px !important; 
+    box-sizing: border-box;
+}
+
+/* Adjust Image Mode (Vertical Comic) */
+#content-area.image-mode {
+    display: block;
+    padding: 0 !important;
+}
+
+/* Ensure Horizontal Mode still works */
+#content-area.horizontal-mode {
+    display: flex;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
 }

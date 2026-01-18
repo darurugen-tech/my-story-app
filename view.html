@@ -68,6 +68,11 @@
         </div>
 
     <div class="footer">
+
+    <div class="section-card" style="margin-top: 30px; margin-bottom: 20px;">
+        <div class="card-title">You may also like</div>
+        <div id="list-recommend" class="scroll-container"></div>
+    </div>
         © 2026 AAN. All Rights Reserved.
     </div>
 
@@ -134,8 +139,11 @@
 
             // D. Bookmark Logic
             setupBookmarkButton(currentStoryData);
+
+            // --- E. RECOMMENDATIONS (ADD THIS HERE) ---
+            renderRecommendations(id);
+            // ------------------------------------------
         }
-        
     }
 
     // --- 3. SWITCH LANGUAGE FUNCTION ---
@@ -270,6 +278,58 @@ let resumeText = (lastReadEp == epNum) ? '<span class="resume-text">(RESUME)</sp
             t.className = "show";
             setTimeout(() => t.className = t.className.replace("show", ""), 3000);
         }
+    }
+
+    // --- RENDER RECOMMENDATIONS (Same Type Only) ---
+    function renderRecommendations(currentId) {
+        const container = document.getElementById("list-recommend");
+        if (!container) return;
+
+        // 1. Get the type of the CURRENT story (e.g., 'comic', 'novel', 'story')
+        const currentType = db[currentId].type;
+
+        // 2. Get all keys
+        let allKeys = Object.keys(db);
+        
+        // 3. Filter: Must be same Type + Released + Not the current one
+        let potentialRecs = allKeys.filter(key => 
+            key !== currentId && 
+            db[key].released !== false && 
+            db[key].type === currentType // <--- THIS IS THE FIX
+        );
+
+        // 4. Shuffle (Randomize)
+        potentialRecs.sort(() => Math.random() - 0.5);
+
+        // 5. Take top 5
+        let selectedRecs = potentialRecs.slice(0, 5);
+
+        // 6. If no recommendations found (e.g. only 1 comic exists), hide the section
+        if (selectedRecs.length === 0) {
+            document.querySelector(".section-card:last-of-type").style.display = "none";
+            return;
+        }
+
+        // 7. Render
+        let html = "";
+        selectedRecs.forEach(key => {
+            let item = db[key];
+            html += `
+                <div class="story-card" onclick="location.href='view.html?id=${item.id}'">
+                    <div style="position:relative;">
+                        ${item.badge ? `<span class="badge ${item.badge === "NEW" ? "badge-new" : "badge-up"}">${item.badge}</span>` : ""}
+                        <img src="${item.cover}" class="story-cover">
+                    </div>
+                    <div class="story-title">${item.title}</div>
+                    <div class="story-stats">${item.stats}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        
+        // 8. Enable Drag Scroll
+        if(typeof enableDragScroll === 'function') enableDragScroll();
     }
 </script>
 </body>
