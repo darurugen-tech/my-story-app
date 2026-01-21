@@ -102,7 +102,7 @@
             // A. Populate Basic Info
             document.getElementById("d-cover").src = currentStoryData.cover;
             document.getElementById("d-title").innerText = currentStoryData.title;
-            document.getElementById("d-stats").innerText = currentStoryData.stats;
+            document.getElementById("d-stats").innerHTML = currentStoryData.stats;
             document.getElementById("d-author").innerText = currentStoryData.author || "Unknown";
             document.getElementById("d-year").innerText = currentStoryData.year || "N/A";
             document.getElementById("d-desc").innerText = currentStoryData.desc;

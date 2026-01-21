@@ -6,7 +6,7 @@ const db = {
         "cover": "images/covers/cover_comic_01.jpg",
         "badge": "UP",
         "author": "KhaToon Team",
-        "stats": "Action • 👁️ 1M",
+        "stats": "Kids • <img src='images/icons/icon_eye.png' class='stats-icon'> 1.2k",
         "desc": "A boy joins a high school for superheroes...",
         "episodes": {
             "1": [

@@ -615,7 +615,7 @@ body.read-page-body #content-area {
 
 /* Adjust Padding for Novels */
 #content-area.text-mode {
-    padding: 20px 34px 40px 34px !important; 
+    padding: 20px 27px 40px 27px !important; 
     box-sizing: border-box;
 }
 
@@ -630,4 +630,19 @@ body.read-page-body #content-area {
     display: flex;
     overflow-x: auto !important;
     overflow-y: hidden !important;
+}
+
+/* Tiny Icon for Stats Line */
+.stats-icon {
+    width: 12px;           /* Size of the eye */
+    height: 12px;
+    vertical-align: middle; /* Aligns it with the text */
+    margin-bottom: 2px;     /* Slight adjustment to sit perfectly */
+    margin-right: 2px;      /* Gap between eye and number */
+    opacity: 0.7;           /* Make it slightly grey like the text */
+}
+
+/* Make icon black in Light Mode */
+body.light-mode .stats-icon {
+    filter: invert(1); 
 }
