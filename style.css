@@ -221,7 +221,7 @@ body.light-mode .search-container button img { filter: invert(0); }
     font-family: 'Kantumruy Pro', sans-serif; color: var(--text-color);
 }
 .chapter-list-box {
-    background-color: #242424; margin: 0 20px 40px 20px;
+    background-color: #242424; margin: 0 20px 5px 20px;
     border-radius: 8px; /* Slightly rounded list */
     padding: 10px 0; max-height: 320px; overflow-y: auto; border: 1px solid #333;
     transition: background-color 0.3s, border-color 0.3s;
@@ -346,23 +346,95 @@ body.is-scrolling .read-page-footer { transform: translate(-50%, 100%); }
 /* --- READER HEADER --- */
 .reader-header-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; width: 100%; gap: 5px; }
 
-/* --- WORLD LIST VIEW (Rounded Edges) --- */
-.world-list-container { display: flex; flex-direction: column; gap: 15px; padding: 20px; }
-.list-item { display: flex; align-items: flex-start; gap: 15px; width: 100%; margin-bottom: 10px; }
-.list-cover-wrapper { width: 100px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s ease, opacity 0.1s ease; }
-.list-cover-wrapper:active { transform: scale(0.95); opacity: 0.8; }
-.list-cover-img { width: 100%; aspect-ratio: 2/3; border-radius: 6px; /* Rounded */ object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-.list-info-box {
-    flex: 1; background-color: #555555; border-radius: 8px; /* Rounded */ padding: 15px;
-    color: white; cursor: pointer; min-height: 130px; display: flex; flex-direction: column;
-    justify-content: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s ease, opacity 0.1s ease;
+/* --- WORLD LIST VIEW (COMPLETE FIX) --- */
+.world-list-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    padding: 20px; 
 }
-body.light-mode .list-info-box { background-color: #e0e0e0; color: #333; }
-.list-info-box:active { transform: scale(0.98); opacity: 0.9; }
-.list-info-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; font-family: 'Kantumruy Pro', sans-serif; line-height: 1.2; }
-.list-info-stats { font-size: 12px; color: #cccccc; margin-bottom: 10px; font-weight: bold; }
-body.light-mode .list-info-stats { color: #666; }
-.list-info-summary { font-size: 11px; line-height: 1.4; opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+.list-item { 
+    display: flex; 
+    align-items: stretch; /* Match height of image and box */
+    gap: 15px; 
+    width: 100%; 
+    margin-bottom: 10px; 
+}
+
+/* 1. The Cover Image */
+.list-cover-wrapper { 
+    width: 100px; 
+    flex-shrink: 0; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.list-cover-img { 
+    width: 100%; 
+    aspect-ratio: 3/4 !important; /* Forces 3:4 Ratio */
+    border-radius: 6px; 
+    object-fit: cover; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
+}
+
+/* 2. The Info Box Container */
+.list-info-box {
+    flex: 1; 
+    background-color: #555555; 
+    border-radius: 8px; 
+    padding: 12px; 
+    color: white; 
+    cursor: pointer; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; /* Centers content vertically */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+}
+
+body.light-mode .list-info-box { 
+    background-color: #e0e0e0; 
+    color: #333; 
+}
+
+/* 3. TEXT STYLES (This is what was missing!) */
+
+/* Main Title - Big & Bold */
+.list-info-title {
+    font-size: 16px;      
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'Kantumruy Pro', sans-serif;
+    line-height: 1.2;
+    color: #ffffff;       /* Force white in dark mode */
+}
+body.light-mode .list-info-title { 
+    color: #000000;       /* Black in light mode */
+}
+
+/* Stats (Views/Type) - Small & Grey */
+.list-info-stats {
+    font-size: 11px;      
+    color: #cccccc;       
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+body.light-mode .list-info-stats { 
+    color: #666666; 
+}
+
+/* Description/Summary - Normal text */
+.list-info-summary {
+    font-size: 11px;      
+    line-height: 1.4;
+    opacity: 0.9;
+    
+    /* Limit to 3 lines so it doesn't get too tall */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
 /* --- CUSTOM SIZE FOR HISTORY SECTION --- */
 /* Target only the cards inside the History list */
@@ -543,7 +615,7 @@ body.read-page-body #content-area {
 
 /* Adjust Padding for Novels */
 #content-area.text-mode {
-    padding: 20px 20px 40px 20px !important; 
+    padding: 20px 34px 40px 34px !important; 
     box-sizing: border-box;
 }
 
