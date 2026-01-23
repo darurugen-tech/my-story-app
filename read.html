@@ -102,6 +102,18 @@
                 setupDropdown(episodes, true);
                 renderContent(episodes[ep]);
                 updateNavButtons(); 
+
+                // --- NEW CODE STARTS HERE ---
+                if (data.single === true) {
+                    // Hide for Single Books
+                    document.getElementById("ep-select").style.display = "none";
+                    document.querySelector(".read-page-footer").style.display = "none";
+                } else {
+                    // SHOW for Normal Stories (Resetting just in case)
+                    document.querySelector(".read-page-footer").style.display = "flex";
+                    // The dropdown is already handled by setupDropdown, so no need to reset here
+                }
+                // --- NEW CODE ENDS HERE ---
             }
         } else if (data.episodes && data.episodes[ep]) {
             document.getElementById("r-title").innerText = data.title;
